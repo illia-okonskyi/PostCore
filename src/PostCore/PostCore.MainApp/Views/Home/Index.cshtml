@@ -1,0 +1,15 @@
+﻿@model string
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "_MainLayout";
+}
+
+<h1 class="bg-dark text-center text-white">@Model</h1>
+
+@await Component.InvokeAsync(nameof(Dummy),
+    new
+    {
+        header = "Dummy ViewComponent header",
+        message = "Dummy ViewComponent message"
+    });
