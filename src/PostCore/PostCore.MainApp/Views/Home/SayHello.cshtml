@@ -1,0 +1,16 @@
+﻿@model string
+
+@{
+    ViewBag.Title = "Hello";
+    Layout = "_MainLayout";
+}
+
+<h1 class="bg-dark text-center text-white">@Model</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col text-center">
+            <a asp-action="Index" class="btn btn-primary">OK</a>
+        </div>
+    </div>
+</div>
