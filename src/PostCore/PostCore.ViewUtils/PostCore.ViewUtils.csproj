@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PostCore.Core\PostCore.Core.csproj" />
     <ProjectReference Include="..\PostCore.Utils\PostCore.Utils.csproj" />
   </ItemGroup>
 

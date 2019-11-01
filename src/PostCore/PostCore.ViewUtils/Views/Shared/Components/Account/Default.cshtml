@@ -1,0 +1,14 @@
+@model PostCore.ViewUtils.ViewComponents.AccountViewModel
+
+<div class="d-inline text-white align-items-center">
+    @if (Model.IsLoggedIn)
+    {
+        <span>Logged in as</span>
+        <span class="font-weight-bold">@Model.User.FirstName @Model.User.SecondName</span>
+        <a asp-action="Logout" asp-controller="Account" class="btn btn-primary">Logout</a>
+    }
+    else
+    {
+        <a asp-action="Login" asp-controller="Account" class="btn btn-primary">Login</a>
+    }
+</div>
