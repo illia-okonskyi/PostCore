@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PostCore.Core.Users;
 
-namespace PostCore.Core.Db.Context
+namespace PostCore.Core.DbContext
 {
     public class IdentityDbContext : IdentityDbContext<User, Role, long>
     {

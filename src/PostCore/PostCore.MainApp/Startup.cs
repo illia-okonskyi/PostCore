@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PostCore.Core.Db.Context;
+using PostCore.Core.DbContext;
 using PostCore.Core.Users;
 
 namespace PostCore.MainApp
