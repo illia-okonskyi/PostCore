@@ -19,9 +19,7 @@ namespace PostCore.MainApp.Controllers
             return View(Core.HelloWorld.IndexText as object);
         }
 
-        [Authorize(Roles =
-            Role.Names.Admin + "," +
-            Role.Names.Operator)]
+        [Authorize(Roles = Role.Authorize.Operator)]
         public IActionResult SayHello()
         {
             var user = _userManager.FindByNameAsync(HttpContext.User.Identity.Name);

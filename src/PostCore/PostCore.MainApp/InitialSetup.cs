@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PostCore.Core.Users;
+using PostCore.Core.Db.Dao;
 
 namespace PostCore.MainApp
 {
@@ -28,15 +27,14 @@ namespace PostCore.MainApp
 
             using (var scope = _app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-                await Role.InitialSetup(roleManager);
-                await User.InitialSetupAdminUser(
+                var rolesDao = scope.ServiceProvider.GetRequiredService<IRolesDao>();
+                var usersDao = scope.ServiceProvider.GetRequiredService<IUsersDao>();
+                await rolesDao.InitialSetup();
+                await usersDao.InitialSetup(
                     _configuration["Config:Admin:UserName"],
                     _configuration["Config:Admin:Email"],
-                    _configuration["Config:Admin:Password"],
-                    userManager,
-                    roleManager);
+                    _configuration["Config:Admin:Password"]
+                    );
             }
         }
     }

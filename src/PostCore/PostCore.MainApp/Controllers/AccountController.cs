@@ -36,11 +36,7 @@ namespace PostCore.MainApp.Controllers
                 return View(vm);
             }
 
-            if (!await Core.Users.User.Login(
-                vm.Email,
-                vm.Password,
-                _userManager,
-                _signInManager))
+            if (!await Login(vm.Email, vm.Password))
             {
                 ModelState.AddModelError(nameof(LoginViewModel.Email), "Invalid user or password");
                 return View(vm);
@@ -52,8 +48,22 @@ namespace PostCore.MainApp.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            await Core.Users.User.Logout(_signInManager);
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        async Task<bool> Login(string email, string password)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return false;
+            }
+
+            await _signInManager.SignOutAsync();
+            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+
+            return result.Succeeded;
         }
     }
 }

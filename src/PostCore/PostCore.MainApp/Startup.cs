@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PostCore.Core.Db.Dao;
 using PostCore.Core.DbContext;
 using PostCore.Core.Users;
 
@@ -53,6 +54,9 @@ namespace PostCore.MainApp
                 options.LoginPath = "/Account/Login";
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
+
+            services.AddTransient<IRolesDao, RolesDao>();
+            services.AddTransient<IUsersDao, UsersDao>();
 
             services.PopulateDependencyViews();
             services.AddMvc()
