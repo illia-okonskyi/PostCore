@@ -25,7 +25,7 @@ namespace PostCore.MainApp.Controllers
         public IActionResult SayHello()
         {
             var user = _userManager.FindByNameAsync(HttpContext.User.Identity.Name);
-            return View($"Hello, {user.Result.FirstName} {user.Result.SecondName}!" as object);
+            return View($"Hello, {user.Result.FirstName} {user.Result.LastName}!" as object);
         }
     }
 }

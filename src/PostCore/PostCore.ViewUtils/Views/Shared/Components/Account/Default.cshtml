@@ -4,7 +4,7 @@
     @if (Model.IsLoggedIn)
     {
         <span>Logged in as</span>
-        <span class="font-weight-bold">@Model.User.FirstName @Model.User.SecondName</span>
+        <span class="font-weight-bold">@Model.User.FirstName @Model.User.LastName</span>
         <a asp-action="Logout" asp-controller="Account" class="btn btn-primary">Logout</a>
     }
     else
