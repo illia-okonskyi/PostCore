@@ -29,8 +29,8 @@ namespace PostCore.MainApp
             {
                 var rolesDao = scope.ServiceProvider.GetRequiredService<IRolesDao>();
                 var usersDao = scope.ServiceProvider.GetRequiredService<IUsersDao>();
-                await rolesDao.InitialSetup();
-                await usersDao.InitialSetup(
+                await rolesDao.InitialSetupAsync();
+                await usersDao.InitialSetupAsync(
                     _configuration["Config:Admin:UserName"],
                     _configuration["Config:Admin:Email"],
                     _configuration["Config:Admin:Password"]

@@ -28,6 +28,10 @@ namespace PostCore.ViewUtils.ViewComponents
             if (isLoggedIn)
             {
                 vm.User = await _userManager.FindByNameAsync(userNameMvc);
+                if (vm.User == null)
+                {
+                    vm.IsLoggedIn = false;
+                }
             }
             return View(vm);
         }

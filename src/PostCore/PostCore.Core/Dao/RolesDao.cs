@@ -7,7 +7,7 @@ namespace PostCore.Core.Db.Dao
 {
     public interface IRolesDao
     {
-        Task InitialSetup();
+        Task InitialSetupAsync();
     }
 
     public class RolesDao : IRolesDao
@@ -23,7 +23,7 @@ namespace PostCore.Core.Db.Dao
             _roleManager = roleManager;
         }
 
-        public async Task InitialSetup()
+        public async Task InitialSetupAsync()
         {
             foreach (var roleName in Role.Names.All)
             {

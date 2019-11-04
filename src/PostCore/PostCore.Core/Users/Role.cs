@@ -23,6 +23,7 @@ namespace PostCore.Core.Users
 
         public static class Authorize
         {
+            public const string Admin = Names.Admin;
             public const string Operator = Names.Admin + "," + Names.Operator;
         }
     }

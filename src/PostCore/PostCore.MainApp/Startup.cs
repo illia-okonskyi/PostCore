@@ -25,6 +25,8 @@ namespace PostCore.MainApp
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IConfiguration>(Configuration);
+
             services.AddDbContext<IdentityDbContext>(options =>
             {
                 var connectionString = Configuration["Config:ConnectionStrings:Identity"];
