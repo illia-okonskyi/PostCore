@@ -90,7 +90,7 @@ namespace PostCore.Core.Db.Dao
         public async Task UpdateAsync(User user)
         {
             var userMangerUser = await _userManager.FindByIdAsync(user.Id.ToString());
-            if (user == null)
+            if (userMangerUser == null)
             {
                 throw new ArgumentException("User with such id not found", nameof(User));
             }
