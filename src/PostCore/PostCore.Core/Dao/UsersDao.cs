@@ -46,16 +46,13 @@ namespace PostCore.Core.Db.Dao
                 LastName = admin,
             };
 
-            var result = await _userManager.CreateAsync(user, adminPassword);
-            if (!result.Succeeded)
+            try
             {
-                throw InitialSetupException.FromIdentityResult(result);
+                await CreateAsync(user, adminPassword, Role.Names.Admin);
             }
-
-            result = await _userManager.AddToRoleAsync(user, Role.Names.Admin);
-            if (!result.Succeeded)
+            catch (Exception e)
             {
-                throw InitialSetupException.FromIdentityResult(result);
+                throw new InitialSetupException("Failed to create admin user", e);
             }
         }
 

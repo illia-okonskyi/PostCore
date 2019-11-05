@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Identity;
 
@@ -7,6 +8,10 @@ namespace PostCore.Core.Exceptions
     {
         public InitialSetupException(string message)
             : base(message)
+        { }
+
+        public InitialSetupException(string message, Exception innerException)
+            : base(message, innerException)
         { }
 
         public static InitialSetupException FromIdentityResult(IdentityResult result)

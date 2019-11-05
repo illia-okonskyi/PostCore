@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PostCore.Core.Db.Dao;
 using PostCore.Core.Users;
 
 namespace PostCore.ViewUtils.ViewComponents
@@ -13,21 +13,20 @@ namespace PostCore.ViewUtils.ViewComponents
 
     public class Account : ViewComponent
     {
-        private readonly UserManager<User> _userManager;
-        public Account(UserManager<User> userManager)
+        private readonly IUsersDao _usersDao;
+        public Account(IUsersDao usersDao)
         {
-            _userManager = userManager;
+            _usersDao = usersDao;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var vm = new AccountViewModel();
-            var userNameMvc = User.Identity.Name;
-            var isLoggedIn = userNameMvc != null;
+            var isLoggedIn = User.Identity.IsAuthenticated;
             vm.IsLoggedIn = isLoggedIn;
             if (isLoggedIn)
             {
-                vm.User = await _userManager.FindByNameAsync(userNameMvc);
+                vm.User = await _usersDao.GetByUserNameAsync(User.Identity.Name);
                 if (vm.User == null)
                 {
                     vm.IsLoggedIn = false;
