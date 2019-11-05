@@ -48,6 +48,7 @@ namespace PostCore.MainApp.Controllers
                 {
                     Id = user.Id,
                     EditorMode = EditorMode.Update,
+                    UserName = user.UserName,
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName
@@ -65,7 +66,7 @@ namespace PostCore.MainApp.Controllers
             var user = new User
             {
                 Id = vm.Id,
-                UserName = vm.FirstName.ToLower() + "." + vm.LastName.ToLower(),
+                UserName = vm.UserName,
                 Email = vm.Email,
                 FirstName = vm.FirstName,
                 LastName = vm.LastName

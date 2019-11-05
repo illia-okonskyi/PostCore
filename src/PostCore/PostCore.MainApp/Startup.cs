@@ -38,7 +38,7 @@ namespace PostCore.MainApp
             services
                 .AddIdentity<User, Role>(options => {
                     options.User.RequireUniqueEmail = true;
-                    options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_.";
+                    options.User.AllowedUserNameCharacters = User.UserNameAllowedChars;
                     options.Password.RequiredLength = 1;
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequireLowercase = false;

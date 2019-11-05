@@ -13,8 +13,13 @@
 }
 <div asp-validation-summary="All" class="text-danger"></div>
 <form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
-    <input type="hidden" asp-for="EditorMode" />
+    <input asp-for="Id" />
+    <input asp-for="EditorMode" />
+    <div class="form-group">
+        <label asp-for="UserName"></label>
+        <div><span asp-validation-for="UserName" class="text-danger"></span></div>
+        <input asp-for="UserName" class="form-control" />
+    </div>
     <div class="form-group">
         <label asp-for="Email"></label>
         <div><span asp-validation-for="Email" class="text-danger"></span></div>
