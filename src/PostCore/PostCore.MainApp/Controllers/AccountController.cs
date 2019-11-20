@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PostCore.Core.Users;
-using PostCore.MainApp.ViewModels;
+using PostCore.MainApp.ViewModels.Account;
 
 namespace PostCore.MainApp.Controllers
 {

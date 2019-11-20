@@ -1,19 +1,35 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using PostCore.Core.Db.Dao;
 using PostCore.Core.Users;
-using PostCore.MainApp.ViewModels;
+using PostCore.MainApp.ViewModels.Users;
 using PostCore.ViewUtils;
 using PostCore.Core.Exceptions;
-using System;
+using PostCore.Utils;
 
 namespace PostCore.MainApp.Controllers
 {
     [Authorize(Roles=Role.Authorize.Admin)]
     public class UsersController : Controller
     {
+        private static readonly ListOptions DefaultListOptions = new ListOptions
+        {
+            Filters = new Dictionary<string, string>
+            {
+                {"userName", ""},
+                {"email", ""},
+                {"firstName", ""},
+                {"lastName", ""}
+            },
+            SortKey = "Id",
+            SortOrder = SortOrder.Ascending
+        };
+        private static readonly long PageSize = 10;
+
         private readonly IConfiguration _configration;
         private readonly IUsersDao _usersDao;
 
@@ -25,22 +41,43 @@ namespace PostCore.MainApp.Controllers
             _usersDao = usersDao;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(ListOptions options)
         {
-            return View(await _usersDao.GetAllAsync());
+            options = options ?? DefaultListOptions;
+
+            var filterUserName = options.Filters["userName"];
+            var filterEmail = options.Filters["email"];
+            var filterFirstName = options.Filters["firstName"];
+            var filterLastName = options.Filters["lastName"];
+
+            var users = await _usersDao.GetAllAsync(
+                filterUserName,
+                filterEmail,
+                filterFirstName,
+                filterLastName,
+                options.SortKey,
+                options.SortOrder);
+
+            return View(new IndexViewModel
+            {
+                Users = users.ToPaginatedList(options.Page, PageSize),
+                CurrentListOptions = options,
+                ReturnUrl = HttpContext.Request.PathAndQuery()
+            });
         }
 
-        public IActionResult Create()
+        public IActionResult Create(string returnUrl)
         {
             return View(
                 nameof(Edit),
                 new EditViewModel
                 {
                     EditorMode = EditorMode.Create,
+                    ReturnUrl = returnUrl
                 });
         }
 
-        public async Task<IActionResult> Edit(long id)
+        public async Task<IActionResult> Edit(long id, string returnUrl)
         {
             var user = await _usersDao.GetByIdAsync(id);
             return View(
@@ -51,7 +88,8 @@ namespace PostCore.MainApp.Controllers
                     UserName = user.UserName,
                     Email = user.Email,
                     FirstName = user.FirstName,
-                    LastName = user.LastName
+                    LastName = user.LastName,
+                    ReturnUrl = returnUrl
                 });
         }
 
@@ -104,12 +142,12 @@ namespace PostCore.MainApp.Controllers
             }
             else
             {
-                return RedirectToAction(nameof(Index));
+                return Redirect(vm.ReturnUrl);
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> Delete(long id, string returnUrl)
         {
             try
             {
@@ -120,7 +158,7 @@ namespace PostCore.MainApp.Controllers
                 ModelState.AddModelError("", e.Message);
             }
 
-            return RedirectToAction(nameof(Index));
+            return Redirect(returnUrl);
         }
     }
 }

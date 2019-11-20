@@ -1,49 +1,165 @@
-﻿@model IEnumerable<User>
+﻿@model PostCore.MainApp.ViewModels.Users.IndexViewModel
 
 @{
     ViewBag.Title = "Users list";
     Layout = "_MainLayout";
+
+    var optionsFormId = "optionsForm";
+    var optionsInputId = "options";
+    var submitButtonId = "options";
+    var filterKeyUserName = "userName";
+    var filterKeyEmail = "email";
+    var filterKeyFirstName = "firstName";
+    var filterKeyLastName = "lastName";
+    var filterKeyToInputId = new Dictionary<string, string>
+{
+{ filterKeyUserName, "options_filters_userName" },
+{ filterKeyEmail, "options_filters_email" },
+{ filterKeyFirstName, "options_filters_firstName" },
+{ filterKeyLastName, "options_filters_lastName" }
+};
+
 }
 
+<script>
+    $(document).ready(function () {
+        var loc = new PostCoreJs.ListOptionsContext("@Model.CurrentListOptions");
+        loc.formId = "@optionsFormId";
+        loc.optionsInputId = "@optionsInputId";
+        loc.addFilterKeyInputPair("@filterKeyUserName", "@filterKeyToInputId[filterKeyUserName]");
+        loc.addFilterKeyInputPair("@filterKeyEmail", "@filterKeyToInputId[filterKeyEmail]");
+        loc.addFilterKeyInputPair("@filterKeyFirstName", "@filterKeyToInputId[filterKeyFirstName]");
+        loc.addFilterKeyInputPair("@filterKeyLastName", "@filterKeyToInputId[filterKeyLastName]");
+        loc.resetPageOnSubmit = true;
 
-<table class="table table-sm table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>UserName</th>
-            <th>Email</th>
-            <th>FirstName</th>
-            <th>LastName</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-        <tr>
-            <td>@user.Id</td>
-            <td>@user.UserName</td>
-            <td>@user.Email</td>
-            <td>@user.FirstName</td>
-            <td>@user.LastName</td>
-            <td>
-                <form asp-action="Delete" asp-route-id="@user.Id" method="post">
-                    <a class="btn btn-sm btn-primary"
-                       asp-action="Edit"
-                       asp-route-id="@user.Id">Edit</a>
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
+        loc.fillForm();
+        loc.setupSubmitButton("@submitButtonId");
+    });
+</script>
 
+<div class="card m-2">
+    <h5 class="card-header">Filters:</h5>
+    <div class="card-body">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyUserName]">User name:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyUserName]" />
+                <div><span validation-key="@filterKeyUserName" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyEmail]">E-mail:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyEmail]" />
+                <div><span validation-key="@filterKeyEmail" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyFirstName]">First name:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyFirstName]" />
+                <div><span validation-key="@filterKeyFirstName" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyLastName]">Last name:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyLastName]" />
+                <div><span validation-key="@filterKeyLastName" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <button class="btn btn-primary" id="@submitButtonId">Filter</button>
+            </div>
+        </div>
+        <form asp-action="Index" id="@optionsFormId" method="get">
+            <input type="hidden" id="@optionsInputId" name="@optionsInputId" />
+        </form>
+    </div>
+</div>
 
-                @*<form asp-action="Delete" method="post">
-                    <input type="hidden" name="id" value="@user.Id" />
-                    <button asp-action="Edit" asp-method="get" asp-route-id="@user.Id" class="btn btn-warning btn-sm">
-                        Edit
-                    </button>
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>*@
-            </td>
-        </tr>
-        }
-    </tbody>
-</table>
-<a asp-action="Create" class="btn btn-primary">Create New User</a>
+<div class="card m-2">
+    <h5 class="card-header">Users:</h5>
+    <div class="card-body">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        <sorta action="Index"
+                               display-name="ID"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="Id" />
+                    </th>
+                    <th>
+                        <sorta action="Index"
+                               display-name="User name"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="UserName" />
+
+                    </th>
+                    <th>
+                        <sorta action="Index"
+                               display-name="E-mail"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="Email" />
+
+                    </th>
+                    <th>
+                        <sorta action="Index"
+                               display-name="First name"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="FirstName" />
+
+                    </th>
+                    <th>
+                        <sorta action="Index"
+                               display-name="Last name"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="LastName" />
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@user.Id</td>
+                        <td>@user.UserName</td>
+                        <td>@user.Email</td>
+                        <td>@user.FirstName</td>
+                        <td>@user.LastName</td>
+                        <td>
+                            <form asp-action="Delete" asp-route-id="@user.Id" method="post">
+                                <a class="btn btn-sm btn-primary"
+                                   asp-action="Edit"
+                                   asp-route-id="@user.Id"
+                                   asp-route-returnUrl="@Model.ReturnUrl">Edit</a>
+                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-center"
+             list-options="@Model.CurrentListOptions"
+             pagination-info="@Model.Users.PaginationInfo"
+             page-class="btn btn-outline-primary"
+             page-class-current="active"></div>
+
+    </div>
+</div>
+
+<div class="card m-2">
+    <h5 class="card-header">Actions:</h5>
+    <div class="card-body">
+        <a asp-action="Create"
+           asp-route-returnUrl="@Model.ReturnUrl"
+           class="text-center btn btn-primary">Create New User
+        </a>
+    </div>
+</div>

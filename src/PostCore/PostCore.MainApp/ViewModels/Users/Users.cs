@@ -1,9 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using PostCore.Core.Users;
+using PostCore.Utils;
 using PostCore.ViewUtils;
 
-namespace PostCore.MainApp.ViewModels
+namespace PostCore.MainApp.ViewModels.Users
 {
+    public class IndexViewModel
+    {
+        public PaginatedList<User> Users { get; set; }
+        public ListOptions CurrentListOptions { get; set; }
+        public string ReturnUrl { get; set; }
+    }
+
     public class EditViewModel
     {
         [UIHint("HiddenInput")]
@@ -36,5 +45,9 @@ namespace PostCore.MainApp.ViewModels
         [Required]
         [Display(Name = "Last name")]
         public string LastName { get; set; }
+
+        [Required]
+        [UIHint("HiddenInput")]
+        public string ReturnUrl { get; set; }
     }
 }

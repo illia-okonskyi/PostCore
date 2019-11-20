@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PostCore.MainApp.ViewModels
+namespace PostCore.MainApp.ViewModels.Account
 {
     public class LoginViewModel
     {
