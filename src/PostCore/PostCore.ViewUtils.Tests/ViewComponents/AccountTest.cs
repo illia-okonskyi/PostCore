@@ -12,7 +12,7 @@ using PostCore.Core.Users;
 using PostCore.ViewUtils.ViewComponents;
 using Xunit;
 
-namespace PostCore.ViewUtils.Tests
+namespace PostCore.ViewUtils.Tests.ViewComponents
 {
     public class AccountTest
     {

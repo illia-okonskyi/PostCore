@@ -1,7 +1,7 @@
 using Xunit;
 using PostCore.ViewUtils.ViewComponents;
 
-namespace PostCore.ViewUtils.Tests
+namespace PostCore.ViewUtils.Tests.ViewComponents
 {
     public class DummyTest
     {
