@@ -10,7 +10,7 @@ using PostCore.Core.Users;
 using PostCore.Core.Db.Dao;
 using PostCore.Core.Exceptions;
 
-namespace PostCore.Core.Tests
+namespace PostCore.Core.Tests.Dao
 {
     public class RolesDaoTest
     {

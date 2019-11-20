@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
+using PostCore.Utils;
 
 namespace PostCore.Core.Db.Dao
 {
@@ -15,7 +17,13 @@ namespace PostCore.Core.Db.Dao
             string adminEmail,
             string adminPassword);
 
-        Task<IEnumerable<User>> GetAllAsync();
+        Task<IEnumerable<User>> GetAllAsync(
+            string filterUserName = null,
+            string filterEmail = null,
+            string filterFirstName = null,
+            string filterLastName = null,
+            string sortKey = null,
+            SortOrder sortOrder = SortOrder.Ascending);
         Task<User> GetByIdAsync(long id);
         Task<User> GetByUserNameAsync(string userName);
         Task CreateAsync(User user, string password, string roleName);
@@ -25,7 +33,17 @@ namespace PostCore.Core.Db.Dao
 
     public class UsersDao : IUsersDao
     {
-        private readonly UserManager<User> _userManager;
+        public static List<string> AcceptableSortKeys { get; private set; } = new List<string>
+        {
+            nameof(User.Id),
+            nameof(User.UserName),
+            nameof(User.Email),
+            nameof(User.FirstName),
+            nameof(User.LastName)
+        };
+
+
+    private readonly UserManager<User> _userManager;
 
         public UsersDao(UserManager<User> userManager)
         {
@@ -56,9 +74,47 @@ namespace PostCore.Core.Db.Dao
             }
         }
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<IEnumerable<User>> GetAllAsync(
+            string filterUserName = null,
+            string filterEmail = null,
+            string filterFirstName = null,
+            string filterLastName = null,
+            string sortKey = null,
+            SortOrder sortOrder = SortOrder.Ascending)
         {
-            return await _userManager.Users.ToListAsync();
+            // 1) Check sortKey
+            if (string.IsNullOrEmpty(sortKey))
+            {
+                sortKey = AcceptableSortKeys.First();
+            }
+            if (!AcceptableSortKeys.Contains(sortKey))
+            {
+                throw new ArgumentException("Must be one of AcceptableSortKeys", nameof(sortKey));
+            }
+
+            // 2) Filter
+            var users = _userManager.Users;
+            if (!string.IsNullOrEmpty(filterUserName))
+            {
+                users = users.Where(u => u.UserName.Contains(filterUserName));
+            }
+            if (!string.IsNullOrEmpty(filterEmail))
+            {
+                users = users.Where(u => u.Email.Contains(filterEmail));
+            }
+            if (!string.IsNullOrEmpty(filterFirstName))
+            {
+                users = users.Where(u => u.FirstName.Contains(filterFirstName));
+            }
+            if (!string.IsNullOrEmpty(filterLastName))
+            {
+                users = users.Where(u => u.LastName.Contains(filterLastName));
+            }
+
+            // 3) Sort
+            users = users.Order(sortKey, sortOrder);
+
+            return await users.ToListAsync();
         }
 
         public async Task<User> GetByIdAsync(long id)
@@ -73,7 +129,6 @@ namespace PostCore.Core.Db.Dao
 
         public async Task CreateAsync(User user, string password, string roleName)
         {
-            user.Id = 0;
             var r = await _userManager.CreateAsync(user, password);
             if (!r.Succeeded)
             {

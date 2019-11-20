@@ -11,8 +11,9 @@ using MockQueryable.Moq;
 using PostCore.Core.Db.Dao;
 using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
+using PostCore.Utils;
 
-namespace PostCore.Core.Tests
+namespace PostCore.Core.Tests.Dao
 {
     public class UsersDaoTest
     {
@@ -257,6 +258,88 @@ namespace PostCore.Core.Tests
             var errorDao = new UsersDao(errorContext.UserManager);
             Assert.Null(await errorDao.GetByIdAsync(users[0].Id));
             Assert.Null(await errorDao.GetByUserNameAsync(users[1].UserName));
+        }
+
+        [Fact]
+        public async Task GetFiltered()
+        {
+            var usersCount = 10;
+            var users = new List<User>();
+            for (int i = 0; i < usersCount; ++i) {
+                users.Add(new User
+                {
+                    Id = i,
+                    UserName = "UserName" + i % 2,
+                    Email = "email" + i % 3+ "@example.com",
+                    FirstName = "John" + i % 4,
+                    LastName = "Smith" + i % 5
+                });
+            }
+            var password = "password";
+            var roleName = "operator";
+            var context = MakeContext();
+            var dao = new UsersDao(context.UserManager);
+
+            for (int i = 0; i < usersCount; ++i)
+            {
+                await dao.CreateAsync(users[i], password, roleName);
+            }
+
+            // filtered user
+            var filtered = await dao.GetAllAsync(
+                filterUserName: "1",
+                filterEmail: "1",
+                filterFirstName: "3",
+                filterLastName: "2");
+            Assert.Single(filtered);
+            Assert.Equal(users[7].Id, filtered.First().Id);
+        }
+
+        [Fact]
+        public async Task GetOrdered()
+        {
+            var random = new Random();
+            var usersCount = 10;
+            var users = new List<User>();
+            for (int i = 0; i < usersCount; ++i)
+            {
+                users.Add(new User
+                {
+                    Id = i,
+                    UserName = "UserName" + random.Next(),
+                    Email = "email" + random.Next() + "@example.com",
+                    FirstName = "John" + random.Next(),
+                    LastName = "Smith" + random.Next()
+                });
+            }
+            var password = "password";
+            var roleName = "operator";
+            var context = MakeContext();
+            var dao = new UsersDao(context.UserManager);
+
+            for (int i = 0; i < usersCount; ++i)
+            {
+                await dao.CreateAsync(users[i], password, roleName);
+            }
+
+            // wrong key
+            await Assert.ThrowsAsync<ArgumentException>("sortKey", () => dao.GetAllAsync(sortKey: "afefe"));
+
+            // defaults
+            users = users.AsEnumerable().Order("Id", SortOrder.Ascending).ToList();
+            var ordered = (await dao.GetAllAsync()).ToList();
+            for (int i = 0; i < usersCount; ++i)
+            {
+                Assert.Equal(users[i].Id, ordered[i].Id);
+            }
+
+            // order by first name desc
+            users = users.AsEnumerable().Order("FirstName", SortOrder.Descending).ToList();
+            ordered = (await dao.GetAllAsync(sortKey: "FirstName", sortOrder: SortOrder.Descending)).ToList();
+            for (int i = 0; i < usersCount; ++i)
+            {
+                Assert.Equal(users[i].Id, ordered[i].Id);
+            }
         }
 
         [Fact]
