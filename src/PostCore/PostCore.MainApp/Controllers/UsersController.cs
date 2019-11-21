@@ -10,6 +10,7 @@ using PostCore.MainApp.ViewModels.Users;
 using PostCore.ViewUtils;
 using PostCore.Core.Exceptions;
 using PostCore.Utils;
+using PostCore.MainApp.ViewModels.Message;
 
 namespace PostCore.MainApp.Controllers
 {
@@ -144,6 +145,24 @@ namespace PostCore.MainApp.Controllers
             {
                 return Redirect(vm.ReturnUrl);
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(EditViewModel vm)
+        {
+            try
+            {
+                await _usersDao.ResetPassword(vm.Id, _configration["Config:Users:DefaultPassword"]);
+                TempData["message"] = MessageViewModel.MakeInfo("Password reset succeded");
+
+            }
+            catch (Exception e)
+            {
+                TempData["message"] = MessageViewModel.MakeError(
+                    "Failed to reset password: " + e.Message);
+            }
+            
+            return View(nameof(Edit), vm);
         }
 
         [HttpPost]

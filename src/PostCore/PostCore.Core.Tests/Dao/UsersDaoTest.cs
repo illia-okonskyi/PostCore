@@ -116,6 +116,15 @@ namespace PostCore.Core.Tests.Dao
                     foundUser.PasswordHash = newPassword;
                 })
                 .Returns(successResult);
+            mock.Setup(m => m.GeneratePasswordResetTokenAsync(It.IsAny<User>()))
+                .ReturnsAsync("token");
+            mock.Setup(m => m.ResetPasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Callback((User user, string token, string newPassword) => {
+                    var foundUser = context.Users.First(u => u.Id == user.Id);
+                    foundUser.PasswordHash = newPassword;
+                })
+                .Returns(successResult);
+
             mock.Setup(m => m.GetRolesAsync(It.IsAny<User>()))
                 .Returns((User user) => Task.FromResult<IList<string>>(context.UserRoles[user.Id]));
 
@@ -173,6 +182,11 @@ namespace PostCore.Core.Tests.Dao
                 .ReturnsAsync(false);
             mock.Setup(m => m.ChangePasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(failedResult);
+            mock.Setup(m => m.GeneratePasswordResetTokenAsync(It.IsAny<User>()))
+                .ReturnsAsync("token");
+            mock.Setup(m => m.ResetPasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(failedResult);
+
             context.UserManager = mock.Object;
             return context;
         }
@@ -505,6 +519,33 @@ namespace PostCore.Core.Tests.Dao
             await Assert.ThrowsAsync<IdentityException>(async () =>
                 await errorDao.ChangePasswordAsync(user.Id, newPassword, "error"));
         }
+
+        [Fact]
+        public async Task ResetPassword()
+        {
+            var user = new User
+            {
+                Id = 1,
+            };
+            var password = "password";
+            var newPassword = "newPassword";
+            var roleName = "operator";
+
+            var context = MakeContext();
+            var dao = new UsersDao(context.UserManager);
+
+            await dao.CreateAsync(user, password, roleName);
+
+            await dao.ResetPassword(user.Id, newPassword);
+            Assert.Equal(newPassword, context.Users.First().PasswordHash);
+
+            var errorContext = MakeErrorContext(true);
+            var errorDao = new UsersDao(errorContext.UserManager);
+            errorContext.Users = context.Users;
+            await Assert.ThrowsAsync<IdentityException>(async () =>
+                await errorDao.ChangePasswordAsync(user.Id, newPassword, "error"));
+        }
+
 
         [Fact]
         public async Task GetUserRole()

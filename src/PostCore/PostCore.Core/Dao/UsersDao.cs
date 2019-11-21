@@ -32,6 +32,7 @@ namespace PostCore.Core.Db.Dao
         Task DeleteAsync(long id);
         Task<bool> CheckPasswordAsync(long userId, string password);
         Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
+        Task ResetPassword(long userId, string newPassword);
         Task<string> GetUserRole(string userName);
     }
 
@@ -205,6 +206,21 @@ namespace PostCore.Core.Db.Dao
             }
 
             var r = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            if (!r.Succeeded)
+            {
+                throw new IdentityException(r);
+            }
+        }
+
+        public async Task ResetPassword(long userId, string newPassword)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ArgumentException("User with such id not found", nameof(userId));
+            }
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var r = await _userManager.ResetPasswordAsync(user, token, newPassword);
             if (!r.Succeeded)
             {
                 throw new IdentityException(r);
