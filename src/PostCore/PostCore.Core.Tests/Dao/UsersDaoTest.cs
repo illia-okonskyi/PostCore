@@ -85,6 +85,10 @@ namespace PostCore.Core.Tests.Dao
                 .Returns((string userName) =>
                    Task.FromResult(
                        context.Users.First((User user) => user.UserName == userName)));
+            mock.Setup(m => m.FindByEmailAsync(It.IsAny<string>()))
+                .Returns((string email) =>
+                   Task.FromResult(
+                       context.Users.First((User user) => user.Email == email)));
             mock.Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .Callback((User user, string password) => context.AddUser(user, password))
                 .Returns(successResult);
@@ -100,6 +104,17 @@ namespace PostCore.Core.Tests.Dao
                 .Returns(successResult);
             mock.Setup(m => m.DeleteAsync(It.IsAny<User>()))
                 .Callback((User user) => context.Users.Remove(user))
+                .Returns(successResult);
+            mock.Setup(m => m.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .ReturnsAsync((User user, string password) => {
+                    var foundUser = context.Users.First(u => u.Id == user.Id);
+                    return foundUser.PasswordHash == password;
+                });
+            mock.Setup(m => m.ChangePasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Callback((User user, string currentPassword, string newPassword) => {
+                    var foundUser = context.Users.First(u => u.Id == user.Id);
+                    foundUser.PasswordHash = newPassword;
+                })
                 .Returns(successResult);
 
             context.UserManager = mock.Object;
@@ -142,6 +157,8 @@ namespace PostCore.Core.Tests.Dao
 
             mock.Setup(m => m.FindByNameAsync(It.IsAny<string>()))
                 .Returns(nullUser);
+            mock.Setup(m => m.FindByEmailAsync(It.IsAny<string>()))
+                .Returns(nullUser);
             mock.Setup(m => m.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
                 .Returns(failedResult);
             mock.Setup(m => m.AddToRoleAsync(It.IsAny<User>(), It.IsAny<string>()))
@@ -150,7 +167,10 @@ namespace PostCore.Core.Tests.Dao
                 .Returns(failedResult);
             mock.Setup(m => m.DeleteAsync(It.IsAny<User>()))
                 .Returns(failedResult);
-
+            mock.Setup(m => m.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>()))
+                .ReturnsAsync(false);
+            mock.Setup(m => m.ChangePasswordAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(failedResult);
             context.UserManager = mock.Object;
             return context;
         }
@@ -227,11 +247,19 @@ namespace PostCore.Core.Tests.Dao
                 {
                     Id = 1,
                     UserName = "UserName1",
+                    Email = "username1@example.com"
                 },
                 new User
                 {
                     Id = 2,
                     UserName = "UserName2",
+                    Email = "username2@example.com"
+                },
+                new User
+                {
+                    Id = 3,
+                    UserName = "UserName3",
+                    Email = "username3@example.com"
                 }
             };
             var password = "password";
@@ -242,22 +270,31 @@ namespace PostCore.Core.Tests.Dao
 
             await dao.CreateAsync(users[0], password, roleName);
             await dao.CreateAsync(users[1], password, roleName);
+            await dao.CreateAsync(users[2], password, roleName);
 
             var allUsers = await dao.GetAllAsync();
-            Assert.Equal(2, allUsers.Count());
+            Assert.Equal(3, allUsers.Count());
 
             var userById = await dao.GetByIdAsync(users[0].Id);
             Assert.Equal(users[0].Id, userById.Id);
             Assert.Equal(users[0].UserName, userById.UserName);
+            Assert.Equal(users[0].Email, userById.Email);
 
             var userByUserName = await dao.GetByUserNameAsync(users[1].UserName);
             Assert.Equal(users[1].Id, userByUserName.Id);
             Assert.Equal(users[1].UserName, userByUserName.UserName);
+            Assert.Equal(users[1].Email, userByUserName.Email);
+
+            var userByEmail = await dao.GetByEmailAsync(users[2].Email);
+            Assert.Equal(users[2].Id, userByEmail.Id);
+            Assert.Equal(users[2].UserName, userByEmail.UserName);
+            Assert.Equal(users[2].Email, userByEmail.Email);
 
             var errorContext = MakeErrorContext(false);
             var errorDao = new UsersDao(errorContext.UserManager);
             Assert.Null(await errorDao.GetByIdAsync(users[0].Id));
             Assert.Null(await errorDao.GetByUserNameAsync(users[1].UserName));
+            Assert.Null(await errorDao.GetByEmailAsync(users[2].UserName));
         }
 
         [Fact]
@@ -420,6 +457,51 @@ namespace PostCore.Core.Tests.Dao
             errorContextDeleteFailed.Users = context.Users;
             await Assert.ThrowsAsync<IdentityException>(async () =>
                 await errorDaoDeleteFailed.DeleteAsync(users[0].Id));
+        }
+
+        [Fact]
+        public async Task CheckPassword()
+        {
+            var user = new User
+            {
+                Id = 1,
+            };
+            var password = "password";
+            var roleName = "operator";
+
+            var context = MakeContext();
+            var dao = new UsersDao(context.UserManager);
+
+            await dao.CreateAsync(user, password, roleName);
+
+            Assert.True(await dao.CheckPasswordAsync(user.Id, password));
+            Assert.False(await dao.CheckPasswordAsync(user.Id, password + "1"));
+        }
+
+        [Fact]
+        public async Task ChangePassword()
+        {
+            var user = new User
+            {
+                Id = 1,
+            };
+            var password = "password";
+            var newPassword = "newPassword";
+            var roleName = "operator";
+
+            var context = MakeContext();
+            var dao = new UsersDao(context.UserManager);
+
+            await dao.CreateAsync(user, password, roleName);
+
+            await dao.ChangePasswordAsync(user.Id, password, newPassword);
+            Assert.Equal(newPassword, context.Users.First().PasswordHash);
+
+            var errorContext = MakeErrorContext(true);
+            var errorDao = new UsersDao(errorContext.UserManager);
+            errorContext.Users = context.Users;
+            await Assert.ThrowsAsync<IdentityException>(async () =>
+                await errorDao.ChangePasswordAsync(user.Id, newPassword, "error"));
         }
     }
 }

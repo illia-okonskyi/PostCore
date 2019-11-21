@@ -1,0 +1,47 @@
+﻿@model PostCore.MainApp.ViewModels.Account.ManageViewModel
+
+@{
+    ViewBag.Title = "Manage user acccount";
+    Layout = "_MainLayout";
+}
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div class="card m-2">
+    <h5 class="card-header">User info:</h5>
+    <div class="card-body">
+        <form asp-action="Manage" method="post">
+            <input asp-for="UserId" />
+            <input asp-for="ReturnUrl" />
+            <div class="form-group">
+                <label asp-for="UserName"></label>
+                <div><span asp-validation-for="UserName" class="text-danger"></span></div>
+                <input asp-for="UserName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <div><span asp-validation-for="Email" class="text-danger"></span></div>
+                <input asp-for="Email" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="FirstName"></label>
+                <div><span asp-validation-for="FirstName" class="text-danger"></span></div>
+                <input asp-for="FirstName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName"></label>
+                <div><span asp-validation-for="LastName" class="text-danger"></span></div>
+                <input asp-for="LastName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Password"></label>
+                <div><span asp-validation-for="Password" class="text-danger"></span></div>
+                <input asp-for="Password" class="form-control" />
+            </div>
+            <div class="text-center">
+                <button class="btn btn-primary" type="submit">Save</button>
+                <a href="@Model.ReturnUrl" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

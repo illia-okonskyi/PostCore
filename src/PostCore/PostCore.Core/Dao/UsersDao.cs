@@ -26,9 +26,12 @@ namespace PostCore.Core.Db.Dao
             SortOrder sortOrder = SortOrder.Ascending);
         Task<User> GetByIdAsync(long id);
         Task<User> GetByUserNameAsync(string userName);
+        Task<User> GetByEmailAsync(string email);
         Task CreateAsync(User user, string password, string roleName);
         Task UpdateAsync(User user);
         Task DeleteAsync(long id);
+        Task<bool> CheckPasswordAsync(long userId, string password);
+        Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
     }
 
     public class UsersDao : IUsersDao
@@ -127,6 +130,11 @@ namespace PostCore.Core.Db.Dao
             return await _userManager.FindByNameAsync(userName);
         }
 
+        public async Task<User> GetByEmailAsync(string email)
+        {
+            return await _userManager.FindByEmailAsync(email);
+        }
+
         public async Task CreateAsync(User user, string password, string roleName)
         {
             var r = await _userManager.CreateAsync(user, password);
@@ -144,7 +152,7 @@ namespace PostCore.Core.Db.Dao
 
         public async Task UpdateAsync(User user)
         {
-            var userMangerUser = await _userManager.FindByIdAsync(user.Id.ToString());
+            var userMangerUser = await GetByIdAsync(user.Id);
             if (userMangerUser == null)
             {
                 throw new ArgumentException("User with such id not found", nameof(User));
@@ -164,13 +172,38 @@ namespace PostCore.Core.Db.Dao
 
         public async Task DeleteAsync(long id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await GetByIdAsync(id);
             if (user == null)
             {
                 throw new ArgumentException("User with such id not found", nameof(id));
             }
 
             var r = await _userManager.DeleteAsync(user);
+            if (!r.Succeeded)
+            {
+                throw new IdentityException(r);
+            }
+        }
+
+        public async Task<bool> CheckPasswordAsync(long userId, string password)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ArgumentException("User with such id not found", nameof(User));
+            }
+            return await _userManager.CheckPasswordAsync(user, password);
+        }
+
+        public async Task ChangePasswordAsync(long userId, string currentPassword, string newPassword)
+        {
+            var user = await GetByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ArgumentException("User with such id not found", nameof(User));
+            }
+
+            var r = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
             if (!r.Succeeded)
             {
                 throw new IdentityException(r);
