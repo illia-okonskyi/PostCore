@@ -41,7 +41,7 @@ namespace PostCore.MainApp.Controllers
                 return View(vm);
             }
 
-            if (!await Login(vm.Email, vm.Password))
+            if (!await Login(vm.Email, vm.Password, vm.RememberMe))
             {
                 ModelState.AddModelError(nameof(LoginViewModel.Email), "Invalid user or password");
                 return View(vm);
@@ -152,7 +152,7 @@ namespace PostCore.MainApp.Controllers
             return View(vm);
         }
 
-        async Task<bool> Login(string email, string password)
+        async Task<bool> Login(string email, string password, bool rememberMe)
         {
             var user = await _usersDao.GetByEmailAsync(email);
             if (user == null)
@@ -161,7 +161,11 @@ namespace PostCore.MainApp.Controllers
             }
 
             await _signInManager.SignOutAsync();
-            var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(
+                user,
+                password,
+                rememberMe,
+                false);
 
             return result.Succeeded;
         }

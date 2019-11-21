@@ -13,6 +13,9 @@ namespace PostCore.MainApp.ViewModels.Account
         [UIHint("Password")]
         public string Password { get; set; }
 
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; } = true;
+
         [UIHint("HiddenInput")]
         public string ReturnUrl { get; set; }
     }
