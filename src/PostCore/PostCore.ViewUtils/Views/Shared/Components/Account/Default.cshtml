@@ -1,14 +1,48 @@
 @model PostCore.ViewUtils.ViewComponents.AccountViewModel
 
-<div class="d-inline text-white align-items-center">
+<ul class="navbar-nav mr-1">
     @if (Model.IsLoggedIn)
     {
-        <span>Logged in as</span>
-        <span class="font-weight-bold">@Model.User.FirstName @Model.User.LastName</span>
-        <a asp-action="Logout" asp-controller="Account" class="btn btn-primary">Logout</a>
+        <li class="nav-item dropdown">
+            <a class="btn btn-primary dropdown-toggle"
+               href="#"
+               id="navbarAreasDropdown1"
+               role="button"
+               data-toggle="dropdown"
+               aria-haspopup="true"
+               aria-expanded="false">
+                @Model.User.FirstName @Model.User.LastName
+            </a>
+            <div class="dropdown-menu dropdown-menu-right " aria-labelledby="navbarAreasDropdown1">
+                <a asp-action="Manage"
+                   asp-controller="Account"
+                   asp-route-returnUrl="@Model.CurrentUrl"
+                   class="dropdown-item">
+                    Manage
+                </a>
+                <a asp-action="ChangePassword"
+                   asp-controller="Account"
+                   asp-route-returnUrl="@Model.CurrentUrl"
+                   class="dropdown-item">
+                    Change password
+                </a>
+                <div class="dropdown-divider"></div>
+                <a asp-action="Logout"
+                   asp-controller="Account"
+                   class="dropdown-item">
+                    Logout
+                </a>
+            </div>
+        </li>
     }
     else
     {
-        <a asp-action="Login" asp-controller="Account" class="btn btn-primary">Login</a>
+        <li class="nav-item">
+            <a asp-action="Login"
+               asp-controller="Account"
+               class="btn btn-primary">
+                Login
+            </a>
+        </li>
     }
-</div>
+</ul>

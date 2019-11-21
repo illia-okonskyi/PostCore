@@ -9,6 +9,7 @@ namespace PostCore.ViewUtils.ViewComponents
     {
         public bool IsLoggedIn { get; set; }
         public User User { get; set; }
+        public string CurrentUrl { get; set; }
     }
 
     public class Account : ViewComponent
@@ -21,7 +22,10 @@ namespace PostCore.ViewUtils.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var vm = new AccountViewModel();
+            var vm = new AccountViewModel
+            {
+                CurrentUrl = Request.PathAndQuery()
+            };
             var isLoggedIn = User.Identity.IsAuthenticated;
             vm.IsLoggedIn = isLoggedIn;
             if (isLoggedIn)

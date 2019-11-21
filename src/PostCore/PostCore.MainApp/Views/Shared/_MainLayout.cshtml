@@ -6,24 +6,61 @@
     <title>PostCore - @ViewBag.Title</title>
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.min.css" />
     <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/twitter-bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/postcorejs/PostCoreJs.js"></script>
 </head>
 <body>
-    <div class="p-2">
-        <div class="navbar navbar-dark bg-dark" role="navigation">
-            <div class="row justify-content-between align-items-center" style="flex-grow: 1">
-                <div class="col">
-                    <a class="navbar-brand" href="/">
-                        <h1>PostCore post automation</h1>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="/">
+            PostCore post automation
+        </a>
+        <button class="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       id="navbarAreasDropdown"
+                       role="button"
+                       data-toggle="dropdown"
+                       aria-haspopup="true"
+                       aria-expanded="false">
+                        Areas
                     </a>
-                </div>
-                <div class="col text-right">
-                    @await Component.InvokeAsync(nameof(Account))
-                </div>
-            </div>
+                    <div class="dropdown-menu" aria-labelledby="navbarAreasDropdown">
+                        <a class="dropdown-item" href="/">Home</a>
+                    </div>
+                </li>
+            </ul>
+            @await Component.InvokeAsync(nameof(Account))
         </div>
-    </div>
+    </nav>
     <div class="p-2">
+        @if (TempData["message"] != null)
+        {
+            var message = TempData["message"] as PostCore.MainApp.ViewModels.Message.MessageViewModel;
+            var alertClass = "";
+            switch (message.Type)
+            {
+                case PostCore.MainApp.ViewModels.Message.MessageType.Info:
+                    alertClass = "alert-success";
+                    break;
+                case PostCore.MainApp.ViewModels.Message.MessageType.Error:
+                    alertClass = "alert-danger";
+                    break;
+            };
+
+            <div class="alert @alertClass">@message.Message</div>
+        }
         @RenderBody()
     </div>
 </body>
