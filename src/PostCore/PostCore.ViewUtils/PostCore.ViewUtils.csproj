@@ -16,4 +16,8 @@
   <ItemGroup>
       <EmbeddedResource Include="Views\**\*.cshtml" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Views\Shared\Components\ApplicationAreas\Default.cshtml" />
+  </ItemGroup>
 </Project>

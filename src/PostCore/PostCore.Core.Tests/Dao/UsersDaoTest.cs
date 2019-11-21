@@ -116,6 +116,8 @@ namespace PostCore.Core.Tests.Dao
                     foundUser.PasswordHash = newPassword;
                 })
                 .Returns(successResult);
+            mock.Setup(m => m.GetRolesAsync(It.IsAny<User>()))
+                .Returns((User user) => Task.FromResult<IList<string>>(context.UserRoles[user.Id]));
 
             context.UserManager = mock.Object;
             return context;
@@ -502,6 +504,25 @@ namespace PostCore.Core.Tests.Dao
             errorContext.Users = context.Users;
             await Assert.ThrowsAsync<IdentityException>(async () =>
                 await errorDao.ChangePasswordAsync(user.Id, newPassword, "error"));
+        }
+
+        [Fact]
+        public async Task GetUserRole()
+        {
+            var user = new User
+            {
+                Id = 1,
+                UserName = "userName"
+            };
+            var password = "password";
+            var roleName = "operator";
+
+            var context = MakeContext();
+            var dao = new UsersDao(context.UserManager);
+
+            await dao.CreateAsync(user, password, roleName);
+
+            Assert.Equal(roleName, await dao.GetUserRole(user.UserName));
         }
     }
 }

@@ -32,6 +32,7 @@ namespace PostCore.Core.Db.Dao
         Task DeleteAsync(long id);
         Task<bool> CheckPasswordAsync(long userId, string password);
         Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
+        Task<string> GetUserRole(string userName);
     }
 
     public class UsersDao : IUsersDao
@@ -155,7 +156,7 @@ namespace PostCore.Core.Db.Dao
             var userMangerUser = await GetByIdAsync(user.Id);
             if (userMangerUser == null)
             {
-                throw new ArgumentException("User with such id not found", nameof(User));
+                throw new ArgumentException("User with such id not found", nameof(user));
             }
 
             userMangerUser.UserName = user.UserName;
@@ -190,7 +191,7 @@ namespace PostCore.Core.Db.Dao
             var user = await GetByIdAsync(userId);
             if (user == null)
             {
-                throw new ArgumentException("User with such id not found", nameof(User));
+                throw new ArgumentException("User with such id not found", nameof(userId));
             }
             return await _userManager.CheckPasswordAsync(user, password);
         }
@@ -200,7 +201,7 @@ namespace PostCore.Core.Db.Dao
             var user = await GetByIdAsync(userId);
             if (user == null)
             {
-                throw new ArgumentException("User with such id not found", nameof(User));
+                throw new ArgumentException("User with such id not found", nameof(userId));
             }
 
             var r = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
@@ -208,6 +209,17 @@ namespace PostCore.Core.Db.Dao
             {
                 throw new IdentityException(r);
             }
+        }
+
+        public async Task<string> GetUserRole(string userName)
+        {
+            var user = await GetByUserNameAsync(userName);
+            if (user == null)
+            {
+                throw new ArgumentException("User with such user name not found", nameof(userName));
+            }
+
+            return (await _userManager.GetRolesAsync(user)).FirstOrDefault();
         }
     }
 }

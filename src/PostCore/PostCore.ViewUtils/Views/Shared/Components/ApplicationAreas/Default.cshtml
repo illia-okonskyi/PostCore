@@ -1,0 +1,31 @@
+﻿@model PostCore.ViewUtils.ViewComponents.ApplicationAreasViewModel
+
+<ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+        <a class="nav-link" href="/">Home</a>
+    </li>
+    @if (Model.AreasForUser.Count() != 0)
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle"
+               href="#"
+               id="navbarAreasDropdown"
+               role="button"
+               data-toggle="dropdown"
+               aria-haspopup="true"
+               aria-expanded="false">
+                Areas
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarAreasDropdown">
+                @foreach (var ai in Model.AreasForUser)
+                {
+                    <a asp-action="Index"
+                       asp-controller="@ai.Controller"
+                       class="dropdown-item">
+                        @ai.DisplayName
+                    </a>
+                }
+            </div>
+        </li>
+    }
+</ul>
