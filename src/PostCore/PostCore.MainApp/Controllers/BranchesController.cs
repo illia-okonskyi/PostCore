@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostCore.Core.Branches;
 using PostCore.Core.Dao;
+using PostCore.Core.Users;
 using PostCore.MainApp.ViewModels.Branches;
 using PostCore.Utils;
 using PostCore.ViewUtils;
 
 namespace PostCore.MainApp.Controllers
 {
+    [Authorize(Roles = Role.Authorize.Admin)]
     public class BranchesController : Controller
     {
         public static readonly long PageSize = 10;
