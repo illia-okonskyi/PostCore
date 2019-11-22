@@ -101,13 +101,39 @@ namespace PostCore.Utils.Tests
             const long pageSize = 3;
             const long page = 2;
 
-            var pl = l.ToPaginatedList(page, 3);
+            var pl = l.ToPaginatedList(page, pageSize);
             Assert.Equal(pageSize, pl.Count());
             for (int i = 0; i < pageSize; ++i)
             {
                 var expectedValue = pageSize * (page - 1) + i;
                 Assert.Equal(expectedValue, pl[i].value);
             }
+        }
+
+        [Fact]
+        public void EmptyList()
+        {
+            var l = new List<Entity>();
+            const long pageSize = 3;
+            const long page = 1;
+
+            var pl = l.ToPaginatedList(page, pageSize);
+            Assert.Equal(page, pl.PaginationInfo.CurrentPage);
+            Assert.Equal(page, pl.PaginationInfo.TotalPages);
+            Assert.False(pl.PaginationInfo.HasPreviousPage);
+            Assert.False(pl.PaginationInfo.HasNextPage);
+        }
+
+        [Fact]
+        public void ZeroPageAndPageSize()
+        {
+            var l = new List<Entity>();
+            const long pageSize = 0;
+            const long page = 0;
+
+            var pl = l.ToPaginatedList(page, pageSize);
+            Assert.Equal(1, pl.PaginationInfo.CurrentPage);
+            Assert.Equal(1, pl.PaginationInfo.TotalPages);
         }
     }
 }

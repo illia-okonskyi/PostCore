@@ -21,9 +21,9 @@ namespace PostCore.Utils
         {
             PaginationInfo = new PaginationInfo
             {
-                PageSize = pageSize,
-                CurrentPage = currentPage,
-                TotalPages = (long)Math.Ceiling(count / (double)pageSize)
+                PageSize = Math.Max(1, pageSize),
+                CurrentPage = Math.Max(1, currentPage),
+                TotalPages = Math.Max(1, (long)Math.Ceiling(count / (double)pageSize))
             };
             AddRange(source);
         }
