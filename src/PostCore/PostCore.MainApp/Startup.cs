@@ -34,6 +34,13 @@ namespace PostCore.MainApp
                     builder.MigrationsAssembly(typeof(Startup).Assembly.FullName)
                 );
             });
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                var connectionString = Configuration["Config:ConnectionStrings:Application"];
+                options.UseSqlServer(connectionString, builder =>
+                    builder.MigrationsAssembly(typeof(Startup).Assembly.FullName)
+                );
+            });
 
             services
                 .AddIdentity<User, Role>(options => {
@@ -59,6 +66,7 @@ namespace PostCore.MainApp
 
             services.AddTransient<IRolesDao, RolesDao>();
             services.AddTransient<IUsersDao, UsersDao>();
+            services.AddTransient<IBranchesDao, BranchesDao>();
 
             services.PopulateDependencyViews();
             services.AddMvc()

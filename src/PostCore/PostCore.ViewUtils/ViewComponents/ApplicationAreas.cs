@@ -31,6 +31,15 @@ namespace PostCore.ViewUtils.ViewComponents
                 {
                     Role.Names.Admin
                 }
+            },
+            new AreaInfo
+            {
+                DisplayName = "Manage branches",
+                Controller = "Branches",
+                ForRoles = new List<string>
+                {
+                    Role.Names.Admin
+                }
             }
         };
 

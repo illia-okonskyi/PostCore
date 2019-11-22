@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Views\Branches\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
