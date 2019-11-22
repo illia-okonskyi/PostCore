@@ -466,13 +466,13 @@ namespace PostCore.Core.Tests.Dao
             var errorContextFindFailed = MakeErrorContext(false);
             var errorDaoFindFailed = new UsersDao(errorContextFindFailed.UserManager);
             await Assert.ThrowsAsync<ArgumentException>(async () =>
-                await errorDaoFindFailed.DeleteAsync(users[0].Id));
+                await errorDaoFindFailed.DeleteAsync(users[1].Id));
 
             var errorContextDeleteFailed = MakeErrorContext(true);
             var errorDaoDeleteFailed = new UsersDao(errorContextDeleteFailed.UserManager);
             errorContextDeleteFailed.Users = context.Users;
             await Assert.ThrowsAsync<IdentityException>(async () =>
-                await errorDaoDeleteFailed.DeleteAsync(users[0].Id));
+                await errorDaoDeleteFailed.DeleteAsync(users[1].Id));
         }
 
         [Fact]
@@ -536,7 +536,7 @@ namespace PostCore.Core.Tests.Dao
 
             await dao.CreateAsync(user, password, roleName);
 
-            await dao.ResetPassword(user.Id, newPassword);
+            await dao.ResetPasswordAsync(user.Id, newPassword);
             Assert.Equal(newPassword, context.Users.First().PasswordHash);
 
             var errorContext = MakeErrorContext(true);

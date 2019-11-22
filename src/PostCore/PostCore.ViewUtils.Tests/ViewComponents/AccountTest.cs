@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Moq;
-using PostCore.Core.Db.Dao;
+using PostCore.Core.Dao;
 using PostCore.Core.Users;
 using PostCore.ViewUtils.ViewComponents;
 using Xunit;

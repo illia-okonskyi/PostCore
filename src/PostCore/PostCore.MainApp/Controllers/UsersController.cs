@@ -17,6 +17,8 @@ namespace PostCore.MainApp.Controllers
     [Authorize(Roles=Role.Authorize.Admin)]
     public class UsersController : Controller
     {
+        public static readonly long PageSize = 10;
+
         private static readonly ListOptions DefaultListOptions = new ListOptions
         {
             Filters = new Dictionary<string, string>
@@ -29,7 +31,6 @@ namespace PostCore.MainApp.Controllers
             SortKey = "Id",
             SortOrder = SortOrder.Ascending
         };
-        private static readonly long PageSize = 10;
 
         private readonly IConfiguration _configration;
         private readonly IUsersDao _usersDao;
@@ -152,7 +153,7 @@ namespace PostCore.MainApp.Controllers
         {
             try
             {
-                await _usersDao.ResetPassword(vm.Id, _configration["Config:Users:DefaultPassword"]);
+                await _usersDao.ResetPasswordAsync(vm.Id, _configration["Config:Users:DefaultPassword"]);
                 TempData["message"] = MessageViewModel.MakeInfo("Password reset succeded");
 
             }

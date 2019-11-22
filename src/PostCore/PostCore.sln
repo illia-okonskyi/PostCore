@@ -3,22 +3,24 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.MainApp", "PostCore.MainApp\PostCore.MainApp.csproj", "{64A72E1B-3E74-4961-B83A-B3A73523B498}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.MainApp", "PostCore.MainApp\PostCore.MainApp.csproj", "{64A72E1B-3E74-4961-B83A-B3A73523B498}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.Utils", "PostCore.Utils\PostCore.Utils.csproj", "{2E3BF910-F0B0-4CDC-953F-83859D347BB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.Utils", "PostCore.Utils\PostCore.Utils.csproj", "{2E3BF910-F0B0-4CDC-953F-83859D347BB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.Core", "PostCore.Core\PostCore.Core.csproj", "{D0A074A0-7969-447D-8B43-3E0C8EA9D56D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.Core", "PostCore.Core\PostCore.Core.csproj", "{D0A074A0-7969-447D-8B43-3E0C8EA9D56D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.ViewUtils", "PostCore.ViewUtils\PostCore.ViewUtils.csproj", "{2D7E9E93-39E0-4927-B5DA-1CDA83B1F32D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.ViewUtils", "PostCore.ViewUtils\PostCore.ViewUtils.csproj", "{2D7E9E93-39E0-4927-B5DA-1CDA83B1F32D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.Core.Tests", "PostCore.Core.Tests\PostCore.Core.Tests.csproj", "{E7493014-B05D-4342-86E5-4BC2A26EA690}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.Core.Tests", "PostCore.Core.Tests\PostCore.Core.Tests.csproj", "{E7493014-B05D-4342-86E5-4BC2A26EA690}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D0A074A0-7969-447D-8B43-3E0C8EA9D56D} = {D0A074A0-7969-447D-8B43-3E0C8EA9D56D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.Utils.Tests", "PostCore.Utils.Tests\PostCore.Utils.Tests.csproj", "{A2056AD8-8F2A-442C-8E42-3E7C7CA091B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.Utils.Tests", "PostCore.Utils.Tests\PostCore.Utils.Tests.csproj", "{A2056AD8-8F2A-442C-8E42-3E7C7CA091B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.ViewUtils.Tests", "PostCore.ViewUtils.Tests\PostCore.ViewUtils.Tests.csproj", "{3073DA7B-FAA2-460C-AEE3-AEDBADD44423}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostCore.ViewUtils.Tests", "PostCore.ViewUtils.Tests\PostCore.ViewUtils.Tests.csproj", "{3073DA7B-FAA2-460C-AEE3-AEDBADD44423}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostCore.MainApp.Tests", "PostCore.MainApp.Tests\PostCore.MainApp.Tests.csproj", "{F77A34C7-878C-4ED3-BD9C-9AAC170D32EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +56,10 @@ Global
 		{3073DA7B-FAA2-460C-AEE3-AEDBADD44423}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3073DA7B-FAA2-460C-AEE3-AEDBADD44423}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3073DA7B-FAA2-460C-AEE3-AEDBADD44423}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F77A34C7-878C-4ED3-BD9C-9AAC170D32EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F77A34C7-878C-4ED3-BD9C-9AAC170D32EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F77A34C7-878C-4ED3-BD9C-9AAC170D32EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F77A34C7-878C-4ED3-BD9C-9AAC170D32EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

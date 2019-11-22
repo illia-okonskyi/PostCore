@@ -32,7 +32,7 @@ namespace PostCore.Core.Dao
         Task DeleteAsync(long id);
         Task<bool> CheckPasswordAsync(long userId, string password);
         Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
-        Task ResetPassword(long userId, string newPassword);
+        Task ResetPasswordAsync(long userId, string newPassword);
         Task<string> GetUserRole(string userName);
     }
 
@@ -210,7 +210,7 @@ namespace PostCore.Core.Dao
             }
         }
 
-        public async Task ResetPassword(long userId, string newPassword)
+        public async Task ResetPasswordAsync(long userId, string newPassword)
         {
             var user = await GetByIdAsync(userId);
             if (user == null)
