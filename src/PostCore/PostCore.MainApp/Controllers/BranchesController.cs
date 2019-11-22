@@ -12,6 +12,8 @@ namespace PostCore.MainApp.Controllers
 {
     public class BranchesController : Controller
     {
+        public static readonly long PageSize = 10;
+
         private static readonly ListOptions DefaultListOptions = new ListOptions
         {
             Filters = new Dictionary<string, string>
@@ -22,7 +24,6 @@ namespace PostCore.MainApp.Controllers
             SortKey = "Id",
             SortOrder = SortOrder.Ascending
         };
-        private static readonly long PageSize = 10;
 
         private readonly IBranchesDao _branchesDao;
 
