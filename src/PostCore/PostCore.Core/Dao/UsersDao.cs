@@ -8,7 +8,7 @@ using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 using PostCore.Utils;
 
-namespace PostCore.Core.Db.Dao
+namespace PostCore.Core.Dao
 {
     public interface IUsersDao
     {
@@ -47,9 +47,7 @@ namespace PostCore.Core.Db.Dao
             nameof(User.LastName)
         };
 
-
-    private readonly UserManager<User> _userManager;
-
+        private readonly UserManager<User> _userManager;
         public UsersDao(UserManager<User> userManager)
         {
             _userManager = userManager;

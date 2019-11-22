@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using PostCore.Core.Db.Dao;
+using PostCore.Core.Dao;
 using PostCore.Core.Users;
 
 namespace PostCore.ViewUtils.ViewComponents

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using PostCore.Core.Db.Dao;
+using PostCore.Core.Dao;
 using PostCore.Core.Users;
 using PostCore.MainApp.ViewModels.Users;
 using PostCore.ViewUtils;
