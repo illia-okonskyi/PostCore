@@ -19,5 +19,6 @@
 
   <ItemGroup>
     <None Remove="Views\Shared\Components\ApplicationAreas\Default.cshtml" />
+    <None Remove="Views\Shared\Components\MyBranch\Default.cshtml" />
   </ItemGroup>
 </Project>

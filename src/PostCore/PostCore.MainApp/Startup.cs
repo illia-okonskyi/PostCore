@@ -1,12 +1,14 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PostCore.Core.DbContext;
+using PostCore.Core.Services;
 using PostCore.Core.Services.Dao;
 using PostCore.Core.Users;
 
@@ -64,13 +66,17 @@ namespace PostCore.MainApp
                 options.AccessDeniedPath = "/Account/AccessDenied";
             });
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddTransient<IRolesDao, RolesDao>();
             services.AddTransient<IUsersDao, UsersDao>();
             services.AddTransient<IBranchesDao, BranchesDao>();
+            services.AddScoped<IMyBranchService, MyBranchService>();
 
             services.PopulateDependencyViews();
             services.AddMvc()
                 .PopulateDependencyObjects();
+            services.AddMemoryCache();
+            services.AddSession();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -78,6 +84,7 @@ namespace PostCore.MainApp
             app.UseDeveloperExceptionPage();
             app.UseStatusCodePages();
             app.UseStaticFiles();
+            app.UseSession();
             app.UseAuthentication();
             app.UseMvcWithDefaultRoute();
 
