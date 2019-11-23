@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using PostCore.Core;
 using PostCore.Core.Dao;
 using PostCore.Core.Users;
 

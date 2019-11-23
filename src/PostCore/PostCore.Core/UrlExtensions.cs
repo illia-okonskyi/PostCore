@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace PostCore.ViewUtils
+namespace PostCore.Core
 {
     public static class UrlExtensions
     {
