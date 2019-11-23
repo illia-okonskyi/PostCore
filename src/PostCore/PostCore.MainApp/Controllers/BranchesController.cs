@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PostCore.Core;
 using PostCore.Core.Branches;
-using PostCore.Core.Dao;
+using PostCore.Core.Services.Dao;
 using PostCore.Core.Users;
 using PostCore.MainApp.ViewModels.Branches;
 using PostCore.Utils;

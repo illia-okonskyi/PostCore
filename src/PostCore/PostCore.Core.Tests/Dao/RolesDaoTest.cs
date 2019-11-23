@@ -7,7 +7,7 @@ using Xunit;
 using Moq;
 using MockQueryable.Moq;
 using PostCore.Core.Users;
-using PostCore.Core.Dao;
+using PostCore.Core.Services.Dao;
 using PostCore.Core.Exceptions;
 
 namespace PostCore.Core.Tests.Dao

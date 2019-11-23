@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using PostCore.Core.Dao;
+using PostCore.Core.Services.Dao;
 using PostCore.Core.Users;
 
 namespace PostCore.ViewUtils.ViewComponents

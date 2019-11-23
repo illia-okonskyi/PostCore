@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
-using PostCore.Core.Dao;
+using PostCore.Core.Services.Dao;
 using PostCore.Core.Users;
 using Xunit;
 using Moq;

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PostCore.Core.Dao;
+using PostCore.Core.Services.Dao;
 using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 using PostCore.MainApp.ViewModels.Message;

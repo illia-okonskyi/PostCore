@@ -8,7 +8,7 @@ using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 using PostCore.Utils;
 
-namespace PostCore.Core.Dao
+namespace PostCore.Core.Services.Dao
 {
     public interface IUsersDao
     {

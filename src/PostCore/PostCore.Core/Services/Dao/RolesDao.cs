@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 
-namespace PostCore.Core.Dao
+namespace PostCore.Core.Services.Dao
 {
     public interface IRolesDao
     {

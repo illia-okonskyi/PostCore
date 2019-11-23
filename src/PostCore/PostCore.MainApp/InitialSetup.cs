@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PostCore.Core.Dao;
+using PostCore.Core.Services.Dao;
 
 namespace PostCore.MainApp
 {

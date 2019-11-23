@@ -7,7 +7,7 @@ using PostCore.Core.Branches;
 using PostCore.Core.DbContext;
 using PostCore.Utils;
 
-namespace PostCore.Core.Dao
+namespace PostCore.Core.Services.Dao
 {
     public interface IBranchesDao
     {
