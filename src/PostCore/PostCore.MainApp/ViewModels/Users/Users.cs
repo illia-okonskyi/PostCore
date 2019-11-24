@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using PostCore.Core.Users;
 using PostCore.Utils;
@@ -15,6 +16,11 @@ namespace PostCore.MainApp.ViewModels.Users
 
     public class EditViewModel
     {
+        [UIHint("HiddenInput")]
+        public IEnumerable<Role> AllRoles { get; set; }
+        [UIHint("HiddenInput")]
+        public bool IsAdminUser { get; set; }
+
         [UIHint("HiddenInput")]
         public EditorMode EditorMode { get; set; }
 
@@ -45,6 +51,10 @@ namespace PostCore.MainApp.ViewModels.Users
         [Required]
         [Display(Name = "Last name")]
         public string LastName { get; set; }
+
+        [Required]
+        [Display(Name = "User role")]
+        public long RoleId { get; set; }
 
         [Required]
         [UIHint("HiddenInput")]

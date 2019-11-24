@@ -27,20 +27,24 @@ namespace PostCore.MainApp.Controllers
                 {"userName", ""},
                 {"email", ""},
                 {"firstName", ""},
-                {"lastName", ""}
+                {"lastName", ""},
+                {"roleName", ""}
             },
             SortKey = "Id",
             SortOrder = SortOrder.Ascending
         };
 
         private readonly IConfiguration _configration;
+        private readonly IRolesDao _rolesDao;
         private readonly IUsersDao _usersDao;
 
         public UsersController(
             IConfiguration configuration,
+            IRolesDao rolesDao,
             IUsersDao usersDao)
         {
             _configration = configuration;
+            _rolesDao = rolesDao;
             _usersDao = usersDao;
         }
 
@@ -52,12 +56,14 @@ namespace PostCore.MainApp.Controllers
             var filterEmail = options.Filters["email"];
             var filterFirstName = options.Filters["firstName"];
             var filterLastName = options.Filters["lastName"];
+            var filterRoleName = options.Filters["roleName"];
 
             var users = await _usersDao.GetAllAsync(
                 filterUserName,
                 filterEmail,
                 filterFirstName,
                 filterLastName,
+                filterRoleName,
                 options.SortKey,
                 options.SortOrder);
 
@@ -69,12 +75,14 @@ namespace PostCore.MainApp.Controllers
             });
         }
 
-        public IActionResult Create(string returnUrl)
+        public async Task<IActionResult> Create(string returnUrl)
         {
             return View(
                 nameof(Edit),
                 new EditViewModel
                 {
+                    AllRoles = await _rolesDao.GetAllAsync(false),
+                    IsAdminUser = false,
                     EditorMode = EditorMode.Create,
                     ReturnUrl = returnUrl
                 });
@@ -82,16 +90,19 @@ namespace PostCore.MainApp.Controllers
 
         public async Task<IActionResult> Edit(long id, string returnUrl)
         {
-            var user = await _usersDao.GetByIdAsync(id);
+            var user = await _usersDao.GetByIdWithRoleAsync(id);
             return View(
                 new EditViewModel
                 {
+                    AllRoles = await _rolesDao.GetAllAsync(false),
+                    IsAdminUser = user.Role.IsAdmin,
                     Id = user.Id,
                     EditorMode = EditorMode.Update,
                     UserName = user.UserName,
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    RoleId = user.Role.Id,
                     ReturnUrl = returnUrl
                 });
         }
@@ -117,14 +128,15 @@ namespace PostCore.MainApp.Controllers
             {
                 if (vm.EditorMode == EditorMode.Create)
                 {
+                    var role = await _rolesDao.GetByIdAsync(vm.RoleId);
                     await _usersDao.CreateAsync(
                         user,
                         _configration["Config:Users:DefaultPassword"],
-                        Role.Names.Operator);
+                        role.Name);
                 }
                 else
                 {
-                    await _usersDao.UpdateAsync(user);
+                    await _usersDao.UpdateAsync(user, vm.RoleId);
                 }
             }
             catch (IdentityException e)

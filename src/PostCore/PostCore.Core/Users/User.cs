@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Identity;
 
 namespace PostCore.Core.Users
 {
@@ -10,5 +12,9 @@ namespace PostCore.Core.Users
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
+
+        public ICollection<UserRole> UserRoles { get; set; }
+
+        public Role Role => UserRoles?.SingleOrDefault()?.Role;
     }
 }

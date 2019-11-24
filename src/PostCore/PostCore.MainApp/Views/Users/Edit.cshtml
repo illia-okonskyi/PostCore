@@ -10,6 +10,8 @@
     var saveButtonText = Model.EditorMode == PostCore.ViewUtils.EditorMode.Create
             ? "Create"
             : "Save";
+    var canSelectRole = Model.EditorMode == PostCore.ViewUtils.EditorMode.Create ||
+        !Model.IsAdminUser;
 }
 <div asp-validation-summary="All" class="text-danger"></div>
 <div class="card m-2">
@@ -18,6 +20,8 @@
         <form asp-action="Edit" method="post">
             <input asp-for="Id" />
             <input asp-for="EditorMode" />
+            <input asp-for="AllRoles" />
+            <input asp-for="IsAdminUser" />
             <input asp-for="ReturnUrl" />
             <div class="form-group">
                 <label asp-for="UserName"></label>
@@ -39,6 +43,21 @@
                 <div><span asp-validation-for="LastName" class="text-danger"></span></div>
                 <input asp-for="LastName" class="form-control" />
             </div>
+            @if (canSelectRole)
+            {
+                <div class="form-group">
+                    <label asp-for="RoleId"></label>
+                    <select name="RoleId" class="form-control">
+                        @foreach (var r in Model.AllRoles)
+                        {
+                            <option value="@r.Id"
+                                    selected="@(r.Id == Model.RoleId)">
+                                @r.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+            }
             <div class="text-center">
                 @if (Model.EditorMode == PostCore.ViewUtils.EditorMode.Update)
                 {

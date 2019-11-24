@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using PostCore.Core.DbContext;
 using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 using PostCore.Utils;
@@ -22,13 +23,15 @@ namespace PostCore.Core.Services.Dao
             string filterEmail = null,
             string filterFirstName = null,
             string filterLastName = null,
+            string filterRoleName = null,
             string sortKey = null,
             SortOrder sortOrder = SortOrder.Ascending);
         Task<User> GetByIdAsync(long id);
+        Task<User> GetByIdWithRoleAsync(long id);
         Task<User> GetByUserNameAsync(string userName);
         Task<User> GetByEmailAsync(string email);
         Task CreateAsync(User user, string password, string roleName);
-        Task UpdateAsync(User user);
+        Task UpdateAsync(User user, long roleId = 0);
         Task DeleteAsync(long id);
         Task<bool> CheckPasswordAsync(long userId, string password);
         Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
@@ -44,13 +47,19 @@ namespace PostCore.Core.Services.Dao
             nameof(User.UserName),
             nameof(User.Email),
             nameof(User.FirstName),
-            nameof(User.LastName)
+            nameof(User.LastName),
+            nameof(User.Role) + "." + nameof(User.Role.Name)
         };
 
         private readonly UserManager<User> _userManager;
-        public UsersDao(UserManager<User> userManager)
+        private readonly IdentityDbContext _dbContext;
+
+        public UsersDao(
+            UserManager<User> userManager,
+            IdentityDbContext dbContext)
         {
             _userManager = userManager;
+            _dbContext = dbContext;
         }
 
         public async Task InitialSetupAsync(
@@ -82,6 +91,7 @@ namespace PostCore.Core.Services.Dao
             string filterEmail = null,
             string filterFirstName = null,
             string filterLastName = null,
+            string filterRoleName = null,
             string sortKey = null,
             SortOrder sortOrder = SortOrder.Ascending)
         {
@@ -96,7 +106,11 @@ namespace PostCore.Core.Services.Dao
             }
 
             // 2) Filter
-            var users = _userManager.Users;
+            var users = _userManager.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .AsQueryable();
             if (!string.IsNullOrEmpty(filterUserName))
             {
                 users = users.Where(u => u.UserName.Contains(filterUserName));
@@ -113,16 +127,34 @@ namespace PostCore.Core.Services.Dao
             {
                 users = users.Where(u => u.LastName.Contains(filterLastName));
             }
+            if (!string.IsNullOrEmpty(filterRoleName))
+            {
+                users = users.Where(u => u.UserRoles.First().Role.Name.Contains(filterRoleName));
+            }
 
-            // 3) Sort
-            users = users.Order(sortKey, sortOrder);
+            // 3) Query
+            var usersList = (await users.ToListAsync()).AsEnumerable();
 
-            return await users.ToListAsync();
+            // 4) Sort
+            usersList = usersList.Order(sortKey, sortOrder);
+
+            return usersList;
         }
 
         public async Task<User> GetByIdAsync(long id)
         {
             return await _userManager.FindByIdAsync(id.ToString());
+        }
+
+        public async Task<User> GetByIdWithRoleAsync(long id)
+        {
+            return (await _userManager.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .AsQueryable()
+                .Where(u => u.Id == id)
+                .ToListAsync())
+                .SingleOrDefault();
         }
 
         public async Task<User> GetByUserNameAsync(string userName)
@@ -150,23 +182,44 @@ namespace PostCore.Core.Services.Dao
             }
         }
 
-        public async Task UpdateAsync(User user)
+        public async Task UpdateAsync(User user, long roleId = 0)
         {
-            var userMangerUser = await GetByIdAsync(user.Id);
-            if (userMangerUser == null)
+            var dbUser = await _dbContext.Users
+                .Include(u => u.UserRoles)
+                .Where(u => u.Id == user.Id)
+                .FirstOrDefaultAsync();
+            if (dbUser == null)
             {
                 throw new ArgumentException("User with such id not found", nameof(user));
             }
 
-            userMangerUser.UserName = user.UserName;
-            userMangerUser.Email = user.Email;
-            userMangerUser.FirstName = user.FirstName;
-            userMangerUser.LastName = user.LastName;
-
-            var r = await _userManager.UpdateAsync(userMangerUser);
-            if (!r.Succeeded)
+            using (var transaction = await _dbContext.Database.BeginTransactionAsync())
             {
-                throw new IdentityException(r);
+                dbUser.UserName = user.UserName;
+                dbUser.Email = user.Email;
+                dbUser.FirstName = user.FirstName;
+                dbUser.LastName = user.LastName;
+                var userRole = dbUser.UserRoles.First();
+                //_dbContext.UserRoles.Attach(userRole);
+                if (roleId != 0 && userRole.RoleId != roleId)
+                {
+                    _dbContext.UserRoles.Remove(userRole);
+                    await _dbContext.UserRoles.AddAsync(new UserRole
+                    {
+                        UserId = dbUser.Id,
+                        RoleId = roleId
+                    });
+                }
+                await _dbContext.SaveChangesAsync();
+
+                try
+                {
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                }
             }
         }
 

@@ -17,6 +17,16 @@ using Microsoft.AspNetCore.Http;
 
 namespace PostCore.MainApp.Tests.Controllers
 {
+    public static class Extensions
+    {
+        public static readonly string AdminUserName = "Admin";
+
+        public static IEnumerable<Role> ExceptAdmin(this IEnumerable<Role> roles)
+        {
+            return roles.Where(r => r.Name != AdminUserName);
+        }
+    }
+
     public class UsersControllerTest
     {
         static readonly string DefaultPasswordKey = "Config:Users:DefaultPassword";
@@ -25,11 +35,12 @@ namespace PostCore.MainApp.Tests.Controllers
         class Context
         {
             public IConfiguration Configuration { get; set; }
+            public IRolesDao RolesDao { get; set; }
             public IUsersDao UsersDao { get; set; }
             public ITempDataDictionary TempDataDictionary { get; set; }
             public ControllerContext ControllerContext { get; set; }
+            public List<Role> Roles { get; set; } = new List<Role>();
             public List<User> Users { get; set; } = new List<User>();
-            public Dictionary<long, string> UserRoles { get; set; } = new Dictionary<long, string>();
             public Dictionary<string, object> TempData { get; set; } = new Dictionary<string, object>();
         }
 
@@ -42,8 +53,27 @@ namespace PostCore.MainApp.Tests.Controllers
                 .Returns(DefaultPassword);
             context.Configuration = configurationMock.Object;
 
+            context.Roles.Add(new Role { Id = 1, Name = Extensions.AdminUserName });
+            context.Roles.Add(new Role { Id = 2, Name = "Operator" });
+            context.Roles.Add(new Role { Id = 3, Name = "Manager" });
+
+            var rolesDaoMock = new Mock<IRolesDao>();
+            rolesDaoMock.Setup(m => m.GetAllAsync(It.IsAny<bool>()))
+                .ReturnsAsync((bool includeAdmin) => {
+                    var roles = context.Roles.AsEnumerable();
+                    if (!includeAdmin)
+                    {
+                        roles = roles.ExceptAdmin();
+                    }
+                    return roles;
+                });
+            rolesDaoMock.Setup(m => m.GetByIdAsync(It.IsAny<long>()))
+                .ReturnsAsync((long id) => context.Roles.First(r => r.Id == id));
+            context.RolesDao = rolesDaoMock.Object;
+
             var usersDaoMock = new Mock<IUsersDao>();
             usersDaoMock.Setup(m => m.GetAllAsync(
+                It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
@@ -55,6 +85,7 @@ namespace PostCore.MainApp.Tests.Controllers
                     string filterEmail,
                     string filterFistName,
                     string filterLastName,
+                    string filterRoleName,
                     string sortKey,
                     SortOrder sortOrder) =>
                 {
@@ -63,10 +94,14 @@ namespace PostCore.MainApp.Tests.Controllers
                         .Where(u => u.Email.Contains(filterEmail))
                         .Where(u => u.FirstName.Contains(filterFistName))
                         .Where(u => u.LastName.Contains(filterLastName))
+                        .Where(u => u.Role.Name.Contains(filterRoleName))
                         .Order(sortKey, sortOrder);
                 });
             usersDaoMock.Setup(m => m.GetByIdAsync(It.IsAny<long>()))
                 .ReturnsAsync((long id) => context.Users.First(u => u.Id == id));
+            usersDaoMock.Setup(m => m.GetByIdWithRoleAsync(It.IsAny<long>()))
+                .ReturnsAsync((long id) => context.Users.First(u => u.Id == id));
+            
             usersDaoMock.Setup(m => m.CreateAsync(
                 It.IsAny<User>(),
                 It.IsAny<string>(),
@@ -74,17 +109,28 @@ namespace PostCore.MainApp.Tests.Controllers
                 .Callback((User user, string password, string roleName) =>
                 {
                     user.PasswordHash = password;
+                    user.UserRoles = new List<UserRole>
+                    {
+                        new UserRole
+                        {
+                            User = user,
+                            Role = new Role
+                            {
+                                Name = roleName
+                            }
+                        }
+                    };
                     context.Users.Add(user);
-                    context.UserRoles[user.Id] = roleName;
                 });
-            usersDaoMock.Setup(m => m.UpdateAsync(It.IsAny<User>()))
-                .Callback((User user) =>
+            usersDaoMock.Setup(m => m.UpdateAsync(It.IsAny<User>(), It.IsAny<long>()))
+                .Callback((User user, long roleId) =>
                 {
                     var contextUser = context.Users.First(u => u.Id == user.Id);
                     contextUser.UserName = user.UserName;
                     contextUser.Email = user.Email;
                     contextUser.FirstName = user.FirstName;
                     contextUser.LastName = user.LastName;
+                    contextUser.UserRoles.First().RoleId = roleId;
                 });
             usersDaoMock.Setup(m => m.ResetPasswordAsync(It.IsAny<long>(), It.IsAny<string>()))
                 .Callback((long userId, string password) =>
@@ -97,7 +143,6 @@ namespace PostCore.MainApp.Tests.Controllers
                 {
                     var user = context.Users.First(u => u.Id == userId);
                     context.Users.Remove(user);
-                    context.UserRoles.Remove(userId);
                 });
             context.UsersDao = usersDaoMock.Object;
 
@@ -123,7 +168,7 @@ namespace PostCore.MainApp.Tests.Controllers
         }
 
         [Fact]
-        public async Task Index_GetAsync()
+        public async Task Index_Get()
         {
             var options = new ListOptions
             {
@@ -132,7 +177,8 @@ namespace PostCore.MainApp.Tests.Controllers
                     { "userName", "1"},
                     { "email", "2"},
                     { "firstName", "3"},
-                    { "lastName", "4"}
+                    { "lastName", "4"},
+                    { "roleName", "5"},
                 },
                 SortKey = "FirstName",
                 SortOrder = SortOrder.Ascending
@@ -154,10 +200,13 @@ namespace PostCore.MainApp.Tests.Controllers
                     LastName = "lastName" + random.Next(),
                 },
                 DefaultPassword,
-                "operator");
+                "operator" + random.Next());
             }
 
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -173,6 +222,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 .Where(u => u.Email.Contains(options.Filters["email"]))
                 .Where(u => u.FirstName.Contains(options.Filters["firstName"]))
                 .Where(u => u.LastName.Contains(options.Filters["lastName"]))
+                .Where(u => u.Role.Name.Contains(options.Filters["roleName"]))
                 .Order(options.SortKey, options.SortOrder)
                 .ToPaginatedList(options.Page, UsersController.PageSize);
             Assert.Equal(expectedUsers, vm.Users);
@@ -181,28 +231,35 @@ namespace PostCore.MainApp.Tests.Controllers
         }
 
         [Fact]
-        public void Create_Get()
+        public async Task Create_Get()
         {
+            var context = MakeContext();
+
             var returnUrl = "/";
             var expectedVm = new EditViewModel
             {
+                AllRoles = context.Roles.ExceptAdmin(),
+                IsAdminUser = false,
                 EditorMode = EditorMode.Create,
                 ReturnUrl = returnUrl
             };
 
-            var context = MakeContext();
-
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
             };
 
-            var r = controller.Create(returnUrl) as ViewResult;
+            var r = (await controller.Create(returnUrl)) as ViewResult;
             Assert.NotNull(r);
             Assert.Equal(nameof(controller.Edit), r.ViewName);
             var vm = r.Model as EditViewModel;
             Assert.NotNull(vm);
+            Assert.Equal(expectedVm.AllRoles, vm.AllRoles);
+            Assert.Equal(expectedVm.IsAdminUser, vm.IsAdminUser);
             Assert.Equal(expectedVm.EditorMode, vm.EditorMode);
             Assert.Equal(expectedVm.ReturnUrl, vm.ReturnUrl);
         }
@@ -210,6 +267,8 @@ namespace PostCore.MainApp.Tests.Controllers
         [Fact]
         public async Task Edit_Get()
         {
+            var context = MakeContext();
+
             var user = new User
             {
                 Id = 1,
@@ -221,19 +280,25 @@ namespace PostCore.MainApp.Tests.Controllers
             var returnUrl = "/";
             var expectedVm = new EditViewModel
             {
+                AllRoles = context.Roles.ExceptAdmin(),
+                IsAdminUser = false,
                 EditorMode = EditorMode.Update,
                 Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                RoleId = 0,
                 ReturnUrl = returnUrl
             };
+            var role = context.Roles[1];
 
-            var context = MakeContext();
-            await context.UsersDao.CreateAsync(user, DefaultPassword, "operator");
+            await context.UsersDao.CreateAsync(user, DefaultPassword, role.Name);
 
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -244,12 +309,57 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Null(r.ViewName);
             var vm = r.Model as EditViewModel;
             Assert.NotNull(vm);
+            Assert.Equal(expectedVm.AllRoles, vm.AllRoles);
             Assert.Equal(expectedVm.EditorMode, vm.EditorMode);
             Assert.Equal(expectedVm.Id, vm.Id);
             Assert.Equal(expectedVm.UserName, vm.UserName);
             Assert.Equal(expectedVm.Email, vm.Email);
             Assert.Equal(expectedVm.FirstName, vm.FirstName);
             Assert.Equal(expectedVm.LastName, vm.LastName);
+            Assert.Equal(expectedVm.RoleId, vm.RoleId);
+            Assert.Equal(expectedVm.ReturnUrl, vm.ReturnUrl);
+        }
+
+        [Fact]
+        public async Task Edit_Get_AdminUser()
+        {
+            var context = MakeContext();
+
+            var user = new User
+            {
+                Id = 1,
+                UserName = "userName",
+                Email = "email@example.com",
+                FirstName = "firstName",
+                LastName = "lastName"
+            };
+            var returnUrl = "/";
+            var expectedVm = new EditViewModel
+            {
+                IsAdminUser = true,
+                EditorMode = EditorMode.Update,
+                ReturnUrl = returnUrl
+            };
+            var role = context.Roles[0];
+
+            await context.UsersDao.CreateAsync(user, DefaultPassword, role.Name);
+
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
+            {
+                TempData = context.TempDataDictionary,
+                ControllerContext = context.ControllerContext
+            };
+
+            var r = await controller.Edit(user.Id, returnUrl) as ViewResult;
+            Assert.NotNull(r);
+            Assert.Null(r.ViewName);
+            var vm = r.Model as EditViewModel;
+            Assert.NotNull(vm);
+            Assert.Equal(expectedVm.IsAdminUser, vm.IsAdminUser);
+            Assert.Equal(expectedVm.EditorMode, vm.EditorMode);
             Assert.Equal(expectedVm.ReturnUrl, vm.ReturnUrl);
         }
 
@@ -258,11 +368,15 @@ namespace PostCore.MainApp.Tests.Controllers
         {
             var context = MakeContext();
 
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
             };
+            var role = context.Roles[0];
             var vm = new EditViewModel
             {
                 EditorMode = EditorMode.Create,
@@ -271,6 +385,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 Email = "email@example.com",
                 FirstName = "firstName",
                 LastName = "lastName",
+                RoleId = role.Id,
                 ReturnUrl = "/"
             };
 
@@ -284,26 +399,31 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Equal(vm.FirstName, user.FirstName);
             Assert.Equal(vm.LastName, user.LastName);
             Assert.Equal(DefaultPassword, user.PasswordHash);
-            Assert.Equal(Role.Names.Operator, context.UserRoles[user.Id]);
-            Assert.Equal(DefaultPassword, user.PasswordHash);
+            Assert.Equal(role.Name, user.Role.Name);
         }
 
         [Fact]
         public async Task Edit_Post_UpdateUser()
         {
+            var context = MakeContext();
+
             var user = new User
             {
                 Id = 1,
                 UserName = "userName",
                 Email = "email@example.com",
                 FirstName = "firstName",
-                LastName = "lastName"
+                LastName = "lastName",
             };
+            var oldRole = context.Roles[1];
+            var newRole = context.Roles[2];
 
-            var context = MakeContext();
-            await context.UsersDao.CreateAsync(user, DefaultPassword, "operator");
+            await context.UsersDao.CreateAsync(user, DefaultPassword, oldRole.Name);
 
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -316,6 +436,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 Email = "email@example.com1",
                 FirstName = "firstName1",
                 LastName = "lastName1",
+                RoleId = newRole.Id,
                 ReturnUrl = "/"
             };
 
@@ -328,6 +449,7 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Equal(vm.Email, updatedUser.Email);
             Assert.Equal(vm.FirstName, updatedUser.FirstName);
             Assert.Equal(vm.LastName, updatedUser.LastName);
+            Assert.Equal(vm.RoleId, updatedUser.UserRoles.First().RoleId);
         }
 
         [Fact]
@@ -343,9 +465,12 @@ namespace PostCore.MainApp.Tests.Controllers
             };
 
             var context = MakeContext();
-            await context.UsersDao.CreateAsync(user, "123", "operator");
+            await context.UsersDao.CreateAsync(user, "123", context.Roles[0].Name);
 
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -358,6 +483,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 Email = "email@example.com",
                 FirstName = "firstName",
                 LastName = "lastName",
+                RoleId = 1,
                 ReturnUrl = "/"
             };
 
@@ -382,9 +508,12 @@ namespace PostCore.MainApp.Tests.Controllers
             var returnUrl = "/";
 
             var context = MakeContext();
-            await context.UsersDao.CreateAsync(user, DefaultPassword, "operator");
+            await context.UsersDao.CreateAsync(user, DefaultPassword, context.Roles[0].Name);
 
-            var controller = new UsersController(context.Configuration, context.UsersDao)
+            var controller = new UsersController(
+                context.Configuration,
+                context.RolesDao,
+                context.UsersDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -394,7 +523,6 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.NotNull(r);
             Assert.Same(returnUrl, r.Url);
             Assert.Empty(context.Users);
-            Assert.Empty(context.UserRoles);
         }
     }
 }

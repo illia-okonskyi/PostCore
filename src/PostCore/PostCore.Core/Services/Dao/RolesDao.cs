@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,9 @@ namespace PostCore.Core.Services.Dao
     {
         Task InitialSetupAsync();
 
-        Task<IEnumerable<Role>> GetAllAsync();
+        Task<IEnumerable<Role>> GetAllAsync(bool includeAdmin = true);
         Task CreateAsync(string roleName);
+        Task<Role> GetByIdAsync(long id);
     }
 
     public class RolesDao : IRolesDao
@@ -40,9 +42,14 @@ namespace PostCore.Core.Services.Dao
             }
         }
 
-        public async Task<IEnumerable<Role>> GetAllAsync()
+        public async Task<IEnumerable<Role>> GetAllAsync(bool includeAdmin = true)
         {
-            return await _roleManager.Roles.ToListAsync();
+            var roles = _roleManager.Roles;
+            if (!includeAdmin)
+            {
+                roles = roles.Where(r => r.Name != Role.Names.Admin);
+            }
+            return await roles.ToListAsync();
         }
 
         public async Task CreateAsync(string roleName)
@@ -52,6 +59,11 @@ namespace PostCore.Core.Services.Dao
             {
                 throw new IdentityException(r);
             }
+        }
+
+        public async Task<Role> GetByIdAsync(long id)
+        {
+            return await _roleManager.FindByIdAsync(id.ToString());
         }
     }
 }
