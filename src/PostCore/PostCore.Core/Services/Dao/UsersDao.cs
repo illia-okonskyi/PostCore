@@ -29,6 +29,7 @@ namespace PostCore.Core.Services.Dao
         Task<User> GetByIdAsync(long id);
         Task<User> GetByIdWithRoleAsync(long id);
         Task<User> GetByUserNameAsync(string userName);
+        Task<User> GetByUserNameWithRoleAsync(string userName);
         Task<User> GetByEmailAsync(string email);
         Task CreateAsync(User user, string password, string roleName);
         Task UpdateAsync(User user, long roleId = 0);
@@ -160,6 +161,17 @@ namespace PostCore.Core.Services.Dao
         public async Task<User> GetByUserNameAsync(string userName)
         {
             return await _userManager.FindByNameAsync(userName);
+        }
+
+        public async Task<User> GetByUserNameWithRoleAsync(string userName)
+        {
+            return (await _userManager.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .AsQueryable()
+                .Where(u => u.UserName == userName)
+                .ToListAsync())
+                .SingleOrDefault();
         }
 
         public async Task<User> GetByEmailAsync(string email)

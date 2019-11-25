@@ -67,10 +67,11 @@ namespace PostCore.MainApp
             });
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddTransient<IRolesDao, RolesDao>();
-            services.AddTransient<IUsersDao, UsersDao>();
-            services.AddTransient<IBranchesDao, BranchesDao>();
-            services.AddTransient<ICarsDao, CarsDao>();
+            services.AddScoped<IRolesDao, RolesDao>();
+            services.AddScoped<IUsersDao, UsersDao>();
+            services.AddScoped<IBranchesDao, BranchesDao>();
+            services.AddScoped<ICarsDao, CarsDao>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IMyBranchService, MyBranchService>();
 
             services.PopulateDependencyViews();
