@@ -40,6 +40,15 @@ namespace PostCore.ViewUtils.ViewComponents
                 {
                     Role.Names.Admin
                 }
+            },
+            new AreaInfo
+            {
+                DisplayName = "Manage cars",
+                Controller = "Cars",
+                ForRoles = new List<string>
+                {
+                    Role.Names.Admin
+                }
             }
         };
 

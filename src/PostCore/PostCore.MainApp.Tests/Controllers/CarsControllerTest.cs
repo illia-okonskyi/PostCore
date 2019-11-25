@@ -6,24 +6,24 @@ using Xunit;
 using Moq;
 using PostCore.Utils;
 using PostCore.MainApp.Controllers;
-using PostCore.MainApp.ViewModels.Branches;
+using PostCore.MainApp.ViewModels.Cars;
 using PostCore.ViewUtils;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Http;
-using PostCore.Core.Branches;
+using PostCore.Core.Cars;
 
 namespace PostCore.MainApp.Tests.Controllers
 {
-    public class BranchesControllerTest
+    public class CarsControllerTest
     {
         class Context
         {
-            public IBranchesDao BranchesDao { get; set; }
+            public ICarsDao CarsDao { get; set; }
             public ITempDataDictionary TempDataDictionary { get; set; }
             public ControllerContext ControllerContext { get; set; }
-            public List<Branch> Branches { get; set; } = new List<Branch>();
+            public List<Car> Cars { get; set; } = new List<Car>();
             public Dictionary<string, object> TempData { get; set; } = new Dictionary<string, object>();
         }
 
@@ -31,44 +31,44 @@ namespace PostCore.MainApp.Tests.Controllers
         {
             var context = new Context();
 
-            var branchesDaoMock = new Mock<IBranchesDao>();
-            branchesDaoMock.Setup(m => m.GetAllAsync(
+            var carsDaoMock = new Mock<ICarsDao>();
+            carsDaoMock.Setup(m => m.GetAllAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<SortOrder>()))
                 .ReturnsAsync((
-                    string filterName,
-                    string filterAddress,
+                    string filterModel,
+                    string filterNumber,
                     string sortKey,
                     SortOrder sortOrder) =>
                 {
-                    return context.Branches
-                        .Where(b => b.Name.Contains(filterName))
-                        .Where(b => b.Address.Contains(filterAddress))
+                    return context.Cars
+                        .Where(c => c.Model.Contains(filterModel))
+                        .Where(c => c.Number.Contains(filterNumber))
                         .Order(sortKey, sortOrder);
                 });
-            branchesDaoMock.Setup(m => m.GetByIdAsync(It.IsAny<long>()))
-                .ReturnsAsync((long id) => context.Branches.First(b => b.Id == id));
-            branchesDaoMock.Setup(m => m.CreateAsync(It.IsAny<Branch>()))
-                .Callback((Branch branch) =>
+            carsDaoMock.Setup(m => m.GetByIdAsync(It.IsAny<long>()))
+                .ReturnsAsync((long id) => context.Cars.First(b => b.Id == id));
+            carsDaoMock.Setup(m => m.CreateAsync(It.IsAny<Car>()))
+                .Callback((Car car) =>
                 {
-                    context.Branches.Add(branch);
+                    context.Cars.Add(car);
                 });
-            branchesDaoMock.Setup(m => m.UpdateAsync(It.IsAny<Branch>(), It.IsAny<Branch>()))
-                .Callback((Branch branch, Branch oldBranch) =>
+            carsDaoMock.Setup(m => m.UpdateAsync(It.IsAny<Car>(), It.IsAny<Car>()))
+                .Callback((Car car, Car oldCar) =>
                 {
-                    var contextBranch = context.Branches.First(b => b.Id == branch.Id);
-                    contextBranch.Name = branch.Name;
-                    contextBranch.Address = branch.Address;
+                    var contextCar = context.Cars.First(c => c.Id == car.Id);
+                    contextCar.Model = car.Model;
+                    contextCar.Number = car.Number;
                 });
-            branchesDaoMock.Setup(m => m.DeleteAsync(It.IsAny<long>()))
+            carsDaoMock.Setup(m => m.DeleteAsync(It.IsAny<long>()))
                 .Callback((long id) =>
                 {
-                    var branch = context.Branches.First(b => b.Id == id);
-                    context.Branches.Remove(branch);
+                    var car = context.Cars.First(c => c.Id == id);
+                    context.Cars.Remove(car);
                 });
-            context.BranchesDao = branchesDaoMock.Object;
+            context.CarsDao = carsDaoMock.Object;
 
             var httpContextMock = new Mock<HttpContext>();
             httpContextMock.Setup(m => m.Request.Path)
@@ -98,10 +98,10 @@ namespace PostCore.MainApp.Tests.Controllers
             {
                 Filters = new Dictionary<string, string>
                 {
-                    { "name", "1"},
-                    { "address", "2"}
+                    { "model", "1"},
+                    { "number", "2"}
                 },
-                SortKey = "address",
+                SortKey = "number",
                 SortOrder = SortOrder.Descending
             };
             var returnUrlPath = "/index";
@@ -112,15 +112,15 @@ namespace PostCore.MainApp.Tests.Controllers
             var random = new Random();
             for (int i = 0; i < 100; ++i)
             {
-                await context.BranchesDao.CreateAsync(new Branch
+                await context.CarsDao.CreateAsync(new Car
                 {
                     Id = i,
-                    Name = "name" + random.Next(),
-                    Address = "address" + random.Next()
+                    Model = "model" + random.Next(),
+                    Number = "number" + random.Next()
                 });
             }
 
-            var controller = new BranchesController(context.BranchesDao)
+            var controller = new CarsController(context.CarsDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -131,12 +131,12 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Null(r.ViewName);
             var vm = r.Model as IndexViewModel;
             Assert.NotNull(vm);
-            var expectedBranches = context.Branches
-                .Where(b => b.Name.Contains(options.Filters["name"]))
-                .Where(b => b.Address.Contains(options.Filters["address"]))
+            var expectedCars = context.Cars
+                .Where(c => c.Model.Contains(options.Filters["model"]))
+                .Where(c => c.Number.Contains(options.Filters["number"]))
                 .Order(options.SortKey, options.SortOrder)
                 .ToPaginatedList(options.Page, BranchesController.PageSize);
-            Assert.Equal(expectedBranches, vm.Branches);
+            Assert.Equal(expectedCars, vm.Cars);
             Assert.Same(options, vm.CurrentListOptions);
             Assert.Equal(returnUrl, vm.ReturnUrl);
         }
@@ -153,7 +153,7 @@ namespace PostCore.MainApp.Tests.Controllers
 
             var context = MakeContext();
 
-            var controller = new BranchesController(context.BranchesDao)
+            var controller = new CarsController(context.CarsDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -171,49 +171,49 @@ namespace PostCore.MainApp.Tests.Controllers
         [Fact]
         public async Task Edit_Get()
         {
-            var branch = new Branch
+            var car = new Car
             {
                 Id = 1,
-                Name = "name",
-                Address = "address"
+                Model = "model",
+                Number = "number"
             };
             var returnUrl = "/";
             var expectedVm = new EditViewModel
             {
                 EditorMode = EditorMode.Update,
-                Id = branch.Id,
-                Name = branch.Name,
-                Address = branch.Address,
+                Id = car.Id,
+                Model = car.Model,
+                Number = car.Number,
                 ReturnUrl = returnUrl
             };
 
             var context = MakeContext();
-            await context.BranchesDao.CreateAsync(branch);
+            await context.CarsDao.CreateAsync(car);
 
-            var controller = new BranchesController(context.BranchesDao)
+            var controller = new CarsController(context.CarsDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
             };
 
-            var r = await controller.Edit(branch.Id, returnUrl) as ViewResult;
+            var r = await controller.Edit(car.Id, returnUrl) as ViewResult;
             Assert.NotNull(r);
             Assert.Null(r.ViewName);
             var vm = r.Model as EditViewModel;
             Assert.NotNull(vm);
             Assert.Equal(expectedVm.EditorMode, vm.EditorMode);
             Assert.Equal(expectedVm.Id, vm.Id);
-            Assert.Equal(expectedVm.Name, vm.Name);
-            Assert.Equal(expectedVm.Address, vm.Address);
+            Assert.Equal(expectedVm.Model, vm.Model);
+            Assert.Equal(expectedVm.Number, vm.Number);
             Assert.Equal(expectedVm.ReturnUrl, vm.ReturnUrl);
         }
 
         [Fact]
-        public async Task Edit_Post_CreateBranch()
+        public async Task Edit_Post_CreateCar()
         {
             var context = MakeContext();
 
-            var controller = new BranchesController(context.BranchesDao)
+            var controller = new CarsController(context.CarsDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -222,34 +222,34 @@ namespace PostCore.MainApp.Tests.Controllers
             {
                 EditorMode = EditorMode.Create,
                 Id = 1,
-                Name = "name",
-                Address = "address",
+                Model = "model",
+                Number = "number",
                 ReturnUrl = "/"
             };
 
             var r = await controller.Edit(vm) as RedirectResult;
             Assert.NotNull(r);
             Assert.Equal(vm.ReturnUrl, r.Url);
-            Assert.Single(context.Branches);
-            var branch = context.Branches.First();
-            Assert.Equal(vm.Name, branch.Name);
-            Assert.Equal(vm.Address, branch.Address);
+            Assert.Single(context.Cars);
+            var car = context.Cars.First();
+            Assert.Equal(vm.Model, car.Model);
+            Assert.Equal(vm.Number, car.Number);
         }
 
         [Fact]
-        public async Task Edit_Post_UpdateBranch()
+        public async Task Edit_Post_UpdateCar()
         {
-            var branch = new Branch
+            var car = new Car
             {
                 Id = 1,
-                Name = "name",
-                Address = "address"
+                Model = "model",
+                Number = "number"
             };
 
             var context = MakeContext();
-            await context.BranchesDao.CreateAsync(branch);
+            await context.CarsDao.CreateAsync(car);
 
-            var controller = new BranchesController(context.BranchesDao)
+            var controller = new CarsController(context.CarsDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
@@ -258,44 +258,44 @@ namespace PostCore.MainApp.Tests.Controllers
             {
                 EditorMode = EditorMode.Update,
                 Id = 1,
-                Name = "name1",
-                Address = "address1",
+                Model = "model1",
+                Number = "number1",
                 ReturnUrl = "/"
             };
 
             var r = await controller.Edit(vm) as RedirectResult;
             Assert.NotNull(r);
             Assert.Equal(vm.ReturnUrl, r.Url);
-            Assert.Single(context.Branches);
-            var updatedBranch = context.Branches.First();
-            Assert.Equal(vm.Name, updatedBranch.Name);
-            Assert.Equal(vm.Address, updatedBranch.Address);
+            Assert.Single(context.Cars);
+            var updatedCar = context.Cars.First();
+            Assert.Equal(vm.Model, updatedCar.Model);
+            Assert.Equal(vm.Number, updatedCar.Number);
         }
 
         [Fact]
         public async Task Delete_Post()
         {
-            var branch = new Branch
+            var car = new Car
             {
                 Id = 1,
-                Name = "name",
-                Address = "address"
+                Model = "model",
+                Number = "number"
             };
             var returnUrl = "/";
 
             var context = MakeContext();
-            await context.BranchesDao.CreateAsync(branch);
+            await context.CarsDao.CreateAsync(car);
 
-            var controller = new BranchesController(context.BranchesDao)
+            var controller = new CarsController(context.CarsDao)
             {
                 TempData = context.TempDataDictionary,
                 ControllerContext = context.ControllerContext
             };
 
-            var r = await controller.Delete(branch.Id, returnUrl) as RedirectResult;
+            var r = await controller.Delete(car.Id, returnUrl) as RedirectResult;
             Assert.NotNull(r);
             Assert.Same(returnUrl, r.Url);
-            Assert.Empty(context.Branches);
+            Assert.Empty(context.Cars);
         }
     }
 }

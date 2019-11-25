@@ -70,6 +70,7 @@ namespace PostCore.MainApp
             services.AddTransient<IRolesDao, RolesDao>();
             services.AddTransient<IUsersDao, UsersDao>();
             services.AddTransient<IBranchesDao, BranchesDao>();
+            services.AddTransient<ICarsDao, CarsDao>();
             services.AddScoped<IMyBranchService, MyBranchService>();
 
             services.PopulateDependencyViews();

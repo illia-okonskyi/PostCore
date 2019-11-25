@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Branches\" />
+    <Folder Include="Views\Cars\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
