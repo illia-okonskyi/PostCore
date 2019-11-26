@@ -19,11 +19,9 @@ namespace PostCore.MainApp.Tests.Controllers
 {
     public static class Extensions
     {
-        public static readonly string AdminUserName = "Admin";
-
         public static IEnumerable<Role> ExceptAdmin(this IEnumerable<Role> roles)
         {
-            return roles.Where(r => r.Name != AdminUserName);
+            return roles.Where(r => r.Name != Role.Names.Admin);
         }
     }
 
@@ -53,9 +51,9 @@ namespace PostCore.MainApp.Tests.Controllers
                 .Returns(DefaultPassword);
             context.Configuration = configurationMock.Object;
 
-            context.Roles.Add(new Role { Id = 1, Name = Extensions.AdminUserName });
-            context.Roles.Add(new Role { Id = 2, Name = "Operator" });
-            context.Roles.Add(new Role { Id = 3, Name = "Manager" });
+            context.Roles.Add(new Role { Id = 1, Name = Role.Names.Admin });
+            context.Roles.Add(new Role { Id = 2, Name = Role.Names.Operator });
+            context.Roles.Add(new Role { Id = 3, Name = Role.Names.Manager });
 
             var rolesDaoMock = new Mock<IRolesDao>();
             rolesDaoMock.Setup(m => m.GetAllAsync(It.IsAny<bool>()))
@@ -97,8 +95,6 @@ namespace PostCore.MainApp.Tests.Controllers
                         .Where(u => u.Role.Name.Contains(filterRoleName))
                         .Order(sortKey, sortOrder);
                 });
-            usersDaoMock.Setup(m => m.GetByIdAsync(It.IsAny<long>()))
-                .ReturnsAsync((long id) => context.Users.First(u => u.Id == id));
             usersDaoMock.Setup(m => m.GetByIdWithRoleAsync(It.IsAny<long>()))
                 .ReturnsAsync((long id) => context.Users.First(u => u.Id == id));
             

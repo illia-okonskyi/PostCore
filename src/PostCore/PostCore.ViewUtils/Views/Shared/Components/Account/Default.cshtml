@@ -11,7 +11,15 @@
                data-toggle="dropdown"
                aria-haspopup="true"
                aria-expanded="false">
-                @Model.User.FirstName @Model.User.LastName
+                <b>@Model.User.FirstName @Model.User.LastName</b>
+                @if (Model.HasBranch)
+                {
+                    <span>Branch: <b>@(Model.Branch?.Name ?? "- No branch -") </b></span>
+                }
+                @if (Model.HasCar)
+                {
+                    <span>Car: <b>@(Model.Car?.Number ?? "- No car -")</b></span>
+                }
             </a>
             <div class="dropdown-menu dropdown-menu-right " aria-labelledby="navbarAreasDropdown1">
                 <a asp-action="Manage"

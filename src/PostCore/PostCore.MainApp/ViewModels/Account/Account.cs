@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using PostCore.Core.Branches;
+using PostCore.Core.Cars;
 using PostCore.Core.Users;
 
 namespace PostCore.MainApp.ViewModels.Account
@@ -56,6 +59,21 @@ namespace PostCore.MainApp.ViewModels.Account
 
         [UIHint("HiddenInput")]
         public string ReturnUrl { get; set; }
+
+        [UIHint("HiddenInput")]
+        public bool HasBranch { get; set; }
+        public IEnumerable<Branch> AllBranches { get; set; }
+        [Required]
+        [Display(Name = "Session branch")]
+        public long BranchId { get; set; }
+
+        [UIHint("HiddenInput")]
+        public bool HasCar { get; set; }
+        public IEnumerable<Car> AllCars { get; set; }
+        [Required]
+        [Display(Name = "Session car")]
+        public long CarId { get; set; }
+
     }
 
     public class ChangePasswordViewModel

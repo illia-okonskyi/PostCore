@@ -112,6 +112,7 @@ namespace PostCore.MainApp.Controllers
         {
             if (!ModelState.IsValid)
             {
+                vm.AllRoles = await _rolesDao.GetAllAsync(false);
                 return View(vm);
             }
 
@@ -153,6 +154,7 @@ namespace PostCore.MainApp.Controllers
 
             if (ModelState.ErrorCount != 0)
             {
+                vm.AllRoles = await _rolesDao.GetAllAsync(false);
                 return View(vm);
             }
             else
@@ -175,7 +177,8 @@ namespace PostCore.MainApp.Controllers
                 TempData["message"] = MessageViewModel.MakeError(
                     "Failed to reset password: " + e.Message);
             }
-            
+
+            vm.AllRoles = await _rolesDao.GetAllAsync(false);
             return View(nameof(Edit), vm);
         }
 

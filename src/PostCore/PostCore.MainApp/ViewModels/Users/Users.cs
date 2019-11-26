@@ -16,7 +16,6 @@ namespace PostCore.MainApp.ViewModels.Users
 
     public class EditViewModel
     {
-        [UIHint("HiddenInput")]
         public IEnumerable<Role> AllRoles { get; set; }
         [UIHint("HiddenInput")]
         public bool IsAdminUser { get; set; }

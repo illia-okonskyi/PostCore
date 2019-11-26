@@ -28,16 +28,15 @@ namespace PostCore.Core.Services.Dao
             SortOrder sortOrder = SortOrder.Ascending);
         Task<User> GetByIdAsync(long id);
         Task<User> GetByIdWithRoleAsync(long id);
-        Task<User> GetByUserNameAsync(string userName);
         Task<User> GetByUserNameWithRoleAsync(string userName);
-        Task<User> GetByEmailAsync(string email);
         Task CreateAsync(User user, string password, string roleName);
         Task UpdateAsync(User user, long roleId = 0);
         Task DeleteAsync(long id);
         Task<bool> CheckPasswordAsync(long userId, string password);
         Task ChangePasswordAsync(long userId, string currentPassword, string newPassword);
         Task ResetPasswordAsync(long userId, string newPassword);
-        Task<string> GetUserRole(string userName);
+        Task<bool> LoginAsync(string email, string password, bool rememberMe);
+        Task LogoutAsync();
     }
 
     public class UsersDao : IUsersDao
@@ -53,13 +52,16 @@ namespace PostCore.Core.Services.Dao
         };
 
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly IdentityDbContext _dbContext;
 
         public UsersDao(
             UserManager<User> userManager,
+            SignInManager<User> signInManager,
             IdentityDbContext dbContext)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _dbContext = dbContext;
         }
 
@@ -158,11 +160,6 @@ namespace PostCore.Core.Services.Dao
                 .SingleOrDefault();
         }
 
-        public async Task<User> GetByUserNameAsync(string userName)
-        {
-            return await _userManager.FindByNameAsync(userName);
-        }
-
         public async Task<User> GetByUserNameWithRoleAsync(string userName)
         {
             return (await _userManager.Users
@@ -172,11 +169,6 @@ namespace PostCore.Core.Services.Dao
                 .Where(u => u.UserName == userName)
                 .ToListAsync())
                 .SingleOrDefault();
-        }
-
-        public async Task<User> GetByEmailAsync(string email)
-        {
-            return await _userManager.FindByEmailAsync(email);
         }
 
         public async Task CreateAsync(User user, string password, string roleName)
@@ -290,15 +282,27 @@ namespace PostCore.Core.Services.Dao
             }
         }
 
-        public async Task<string> GetUserRole(string userName)
+        public async Task<bool> LoginAsync(string email, string password, bool rememberMe)
         {
-            var user = await GetByUserNameAsync(userName);
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                throw new ArgumentException("User with such user name not found", nameof(userName));
+                return false;
             }
 
-            return (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+            await _signInManager.SignOutAsync();
+            var result = await _signInManager.PasswordSignInAsync(
+                user,
+                password,
+                rememberMe,
+                false);
+
+            return result.Succeeded;
+        }
+
+        public async Task LogoutAsync()
+        {
+            await _signInManager.SignOutAsync();
         }
     }
 }

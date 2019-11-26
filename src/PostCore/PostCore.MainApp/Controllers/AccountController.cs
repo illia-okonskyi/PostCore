@@ -1,28 +1,35 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PostCore.Core.Services;
 using PostCore.Core.Services.Dao;
 using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 using PostCore.MainApp.ViewModels.Message;
 using PostCore.MainApp.ViewModels.Account;
+using System;
 
 namespace PostCore.MainApp.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly SignInManager<User> _signInManager;
         private readonly IUsersDao _usersDao;
+        private readonly IBranchesDao _branchesDao;
+        private readonly ICarsDao _carsDao;
+        private readonly ICurrentUserService _currentUserService;
         public AccountController(
-            SignInManager<User> signInManager,
-            IUsersDao usersDao)
+            IUsersDao usersDao,
+            IBranchesDao branchesDao,
+            ICarsDao carsDao,
+            ICurrentUserService currentUserService)
         {
-            _signInManager = signInManager;
             _usersDao = usersDao;
+            _branchesDao = branchesDao;
+            _carsDao = carsDao;
+            _currentUserService = currentUserService;
         }
 
-        public IActionResult AccessDenied(string returnUrl)
+        public IActionResult AccessDenied()
         {
             return View();
         }
@@ -41,7 +48,7 @@ namespace PostCore.MainApp.Controllers
                 return View(vm);
             }
 
-            if (!await Login(vm.Email, vm.Password, vm.RememberMe))
+            if (!await _usersDao.LoginAsync(vm.Email, vm.Password, vm.RememberMe))
             {
                 ModelState.AddModelError(nameof(LoginViewModel.Email), "Invalid user or password");
                 return View(vm);
@@ -53,29 +60,54 @@ namespace PostCore.MainApp.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            await _usersDao.LogoutAsync();
+            _currentUserService.Reset();
             return RedirectToAction("Index", "Home");
         }
 
         [Authorize]
         public async Task<IActionResult> Manage(string returnUrl)
         {
-            var user = await _usersDao.GetByUserNameAsync(User.Identity.Name);
-            return View(new ManageViewModel
+            var user = await _currentUserService.GetUserAsync();
+            var role = await _currentUserService.GetRoleAsync();
+
+            var vm = new ManageViewModel
             {
                 UserId = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                HasBranch = role.HasBranch,
+                HasCar = role.HasCar,
                 ReturnUrl = returnUrl
-            });
+            };
+
+            if (vm.HasBranch)
+            {
+                vm.AllBranches = await _branchesDao.GetAllAsync();
+            }
+            if (vm.HasCar)
+            {
+                vm.AllCars = await _carsDao.GetAllAsync();
+            }
+
+            return View(vm);
         }
 
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Manage(ManageViewModel vm)
         {
+            if (vm.HasBranch)
+            {
+                vm.AllBranches = await _branchesDao.GetAllAsync();
+            }
+            if (vm.HasCar)
+            {
+                vm.AllCars = await _carsDao.GetAllAsync();
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(vm);
@@ -99,6 +131,21 @@ namespace PostCore.MainApp.Controllers
             try
             {
                 await _usersDao.UpdateAsync(user);
+                if (vm.HasBranch)
+                {
+                    if (!await _currentUserService.SetBranchAsync(vm.BranchId))
+                    {
+                        throw new Exception("Failed to set current branch");
+                    }
+                }
+
+                if (vm.HasCar)
+                {
+                    if (!await _currentUserService.SetCarAsync(vm.CarId))
+                    {
+                        throw new Exception("Failed to set current car");
+                    }
+                }
             }
             catch (IdentityException e)
             {
@@ -107,16 +154,18 @@ namespace PostCore.MainApp.Controllers
                     ModelState.AddModelError("", error);
                 }
             }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", e.Message);
+            }
 
-            TempData["message"] = MessageViewModel.MakeInfo("User info changed");
             return View(vm);
         }
 
         [Authorize]
         public async Task<IActionResult> ChangePassword(string returnUrl)
         {
-            var userName = User.Identity.Name;
-            var user = await _usersDao.GetByUserNameAsync(userName);
+            var user = await _currentUserService.GetUserAsync();
             return View(new ChangePasswordViewModel
             {
                 UserId = user.Id,
@@ -147,27 +196,13 @@ namespace PostCore.MainApp.Controllers
                     ModelState.AddModelError("", error);
                 }
             }
+            catch (Exception e)
+            {
+                ModelState.AddModelError("", e.Message);
+            }
 
             TempData["message"] = MessageViewModel.MakeInfo("Password changed");
             return View(vm);
-        }
-
-        async Task<bool> Login(string email, string password, bool rememberMe)
-        {
-            var user = await _usersDao.GetByEmailAsync(email);
-            if (user == null)
-            {
-                return false;
-            }
-
-            await _signInManager.SignOutAsync();
-            var result = await _signInManager.PasswordSignInAsync(
-                user,
-                password,
-                rememberMe,
-                false);
-
-            return result.Succeeded;
         }
     }
 }

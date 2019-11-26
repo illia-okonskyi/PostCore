@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using PostCore.Core.Services.Dao;
+using PostCore.Core.Services;
 using PostCore.Core.Users;
 
 namespace PostCore.ViewUtils.ViewComponents
@@ -52,10 +52,10 @@ namespace PostCore.ViewUtils.ViewComponents
             }
         };
 
-        private readonly IUsersDao _usersDao;
-        public ApplicationAreas(IUsersDao usersDao)
+        private readonly ICurrentUserService _currentUserService;
+        public ApplicationAreas(ICurrentUserService currentUserService)
         {
-            _usersDao = usersDao;
+            _currentUserService = currentUserService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
@@ -66,10 +66,10 @@ namespace PostCore.ViewUtils.ViewComponents
                 return View(new ApplicationAreasViewModel());
             }
 
-            var roleName = await _usersDao.GetUserRole(User.Identity.Name);
+            var role = await _currentUserService.GetRoleAsync();
             return View(new ApplicationAreasViewModel
             {
-                AreasForUser = AllAreas.Where(ai => ai.ForRoles.Contains(roleName)).ToList()
+                AreasForUser = AllAreas.Where(ai => ai.ForRoles.Contains(role.Name)).ToList()
             });
         }
     }

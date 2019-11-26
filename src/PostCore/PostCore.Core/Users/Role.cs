@@ -5,6 +5,15 @@ namespace PostCore.Core.Users
 {
     public class Role : IdentityRole<long>
     {
+        private static readonly List<string> HasBranchRoleNames = new List<string>
+        {
+            Names.Admin, Names.Operator, Names.Stockman, Names.Courier
+        };
+        private static readonly List<string> HasCarRoleNames = new List<string>
+        {
+            Names.Admin, Names.Driver, Names.Courier
+        };
+
         public Role()
             : base()
         { }
@@ -16,6 +25,8 @@ namespace PostCore.Core.Users
         public ICollection<UserRole> UserRoles { get; set; }
 
         public bool IsAdmin => Name == Names.Admin;
+        public bool HasBranch => HasBranchRoleNames.Contains(Name);
+        public bool HasCar => HasCarRoleNames.Contains(Name);
 
         public static class Names
         {

@@ -10,9 +10,11 @@
 <div class="card m-2">
     <h5 class="card-header">User info:</h5>
     <div class="card-body">
-        <form asp-action="Manage" method="post">
+        <form id="pageform" asp-action="Manage" method="post">
             <input asp-for="UserId" />
             <input asp-for="ReturnUrl" />
+            <input asp-for="HasBranch" />
+            <input asp-for="HasCar" />
             <div class="form-group">
                 <label asp-for="UserName"></label>
                 <div><span asp-validation-for="UserName" class="text-danger"></span></div>
@@ -33,15 +35,75 @@
                 <div><span asp-validation-for="LastName" class="text-danger"></span></div>
                 <input asp-for="LastName" class="form-control" />
             </div>
-            <div class="form-group">
-                <label asp-for="Password"></label>
-                <div><span asp-validation-for="Password" class="text-danger"></span></div>
-                <input asp-for="Password" class="form-control" />
-            </div>
-            <div class="text-center">
-                <button class="btn btn-primary" type="submit">Save</button>
-                <a href="@Model.ReturnUrl" class="btn btn-secondary">Cancel</a>
-            </div>
         </form>
+    </div>
+</div>
+
+@if (Model.HasBranch)
+{
+    <div class="card m-2">
+        <h5 class="card-header">Branch:</h5>
+        <div class="card-body">
+            <div class="form-group">
+                <label asp-for="BranchId"></label>
+                <div><span asp-validation-for="BranchId" class="text-danger"></span></div>
+                <select form="pageform" class="form-control" name="BranchId">
+                    <option value="0"
+                            selected="@(Model.BranchId == 0)"
+                            disabled>
+                        - No branch -
+                    </option>
+                    @foreach (var b in Model.AllBranches)
+                    {
+                        <option value="@b.Id"
+                                selected="@(b.Id == Model.BranchId)">
+                            @b.Name - @b.Address
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model.HasCar)
+{
+    <div class="card m-2">
+        <h5 class="card-header">Car:</h5>
+        <div class="card-body">
+            <div class="form-group">
+                <label asp-for="CarId"></label>
+                <div><span asp-validation-for="CarId" class="text-danger"></span></div>
+                <select form="pageform" class="form-control" name="CarId">
+                    <option value="0"
+                            selected="@(Model.CarId == 0)"
+                            disabled>
+                        - No car -
+                    </option>
+                    @foreach (var c in Model.AllCars)
+                    {
+                        <option value="@c.Id"
+                                selected="@(c.Id == Model.CarId)">
+                            @c.Model - @c.Number
+                        </option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card m-2">
+    <h5 class="card-header">Password:</h5>
+    <div class="card-body">
+        <div class="form-group">
+            <label asp-for="Password"></label>
+            <div><span asp-validation-for="Password" class="text-danger"></span></div>
+            <input asp-for="Password" form="pageform" class="form-control" />
+        </div>
+        <div class="text-center">
+            <button form="pageform" class="btn btn-primary" type="submit">Save</button>
+            <a href="@Model.ReturnUrl" class="btn btn-secondary">Cancel</a>
+        </div>
     </div>
 </div>
