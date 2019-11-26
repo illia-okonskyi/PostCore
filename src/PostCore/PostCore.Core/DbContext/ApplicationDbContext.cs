@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PostCore.Core.Activities;
 using PostCore.Core.Branches;
 using PostCore.Core.Cars;
 using PostCore.Core.Mail;
@@ -14,6 +15,7 @@ namespace PostCore.Core.DbContext
         public virtual DbSet<Branch> Branch { get; set; }
         public virtual DbSet<Car> Car { get; set; }
         public virtual DbSet<Post> Post { get; set; }
+        public virtual DbSet<Activity> Activity { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,6 +39,24 @@ namespace PostCore.Core.DbContext
                 entity.HasOne(p => p.Car)
                     .WithMany(c => c.Mail)
                     .HasForeignKey(p => p.CarId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<Activity>(entity =>
+            {
+                entity.HasOne(a => a.Post)
+                    .WithMany()
+                    .HasForeignKey(a => a.PostId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(a => a.Branch)
+                    .WithMany()
+                    .HasForeignKey(a => a.BranchId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(a => a.Car)
+                    .WithMany()
+                    .HasForeignKey(a => a.CarId)
                     .OnDelete(DeleteBehavior.SetNull);
             });
         }
