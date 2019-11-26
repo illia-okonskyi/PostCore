@@ -105,6 +105,10 @@ namespace PostCore.Core.Services.Dao
 
         public async Task DeleteAsync(long id)
         {
+            // Force load mail for ClientSetNull delete behavior
+            await _dbContext.Post.Where(p => p.SourceBranchId == id || p.DestinationBranchId == id)
+                .LoadAsync();
+
             _dbContext.Branch.Remove(new Branch { Id = id });
             await _dbContext.SaveChangesAsync();
         }
