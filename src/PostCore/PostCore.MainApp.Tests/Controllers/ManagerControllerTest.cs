@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PostCore.Core.Activities;
@@ -23,6 +24,7 @@ namespace PostCore.MainApp.Tests.Controllers
             public IActivitiesDao ActivitiesDao { get; set; }
             public IBranchesDao BranchesDao { get; set; }
             public ICarsDao CarsDao { get; set; }
+            public ControllerContext ControllerContext { get; set; }
 
             public List<Post> Mail = new List<Post>
             {
@@ -41,7 +43,7 @@ namespace PostCore.MainApp.Tests.Controllers
             };
         }
 
-        Context MakeContext()
+        Context MakeContext(string path = "/", string query = "?query=query")
         {
             var context = new Context();
 
@@ -76,6 +78,11 @@ namespace PostCore.MainApp.Tests.Controllers
                         .Where(a => a.CarId == filterCarId.Value)
                         .OrderByDescending((a) => a.DateTime);
                 });
+            activitiesDaoMock.Setup(m => m.RemoveToDateAsync(It.IsAny<DateTime>()))
+                .Callback((DateTime date) =>
+                {
+                    context.Activities.RemoveAll(a => a.DateTime < date);
+                });
             context.ActivitiesDao = activitiesDaoMock.Object;
 
             var branchesDaoMock = new Mock<IBranchesDao>();
@@ -96,13 +103,28 @@ namespace PostCore.MainApp.Tests.Controllers
                 .ReturnsAsync(context.Cars);
             context.CarsDao = carsDaoMock.Object;
 
+            var httpContextMock = new Mock<HttpContext>();
+            httpContextMock.Setup(m => m.Request.Path)
+                .Returns(path);
+            httpContextMock.Setup(m => m.Request.QueryString)
+                .Returns(new QueryString(query));
+            var controllerContext = new ControllerContext
+            {
+                HttpContext = httpContextMock.Object
+            };
+            context.ControllerContext = controllerContext;
+
             return context;
         }
 
         [Fact]
         public async Task Index_Get()
         {
-            var context = MakeContext();
+            var returnUrlPath = "/index";
+            var returnUrlQuery = "?indexquery=indexquery";
+            var returnUrl = returnUrlPath + returnUrlQuery;
+
+            var context = MakeContext(returnUrlPath, returnUrlQuery);
 
             ActivityType? filterType = ActivityType.PostCreated;
             DateTime? filterFrom = DateTime.Today;
@@ -143,7 +165,10 @@ namespace PostCore.MainApp.Tests.Controllers
             var controller = new ManagerController(
                 context.ActivitiesDao,
                 context.BranchesDao,
-                context.CarsDao);
+                context.CarsDao)
+            {
+                ControllerContext = context.ControllerContext
+            };
 
             var r = await controller.Index(options) as ViewResult;
             Assert.NotNull(r);
@@ -167,6 +192,82 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Same(context.Cars, vm.AllCars);
             Assert.Equal(expectedActivities, vm.Activities);
             Assert.Same(options, vm.CurrentListOptions);
+            Assert.Equal(returnUrl, vm.ReturnUrl);
+        }
+
+        [Fact]
+        public void RemoveActivities_Get()
+        {
+            var returnUrlPath = "/index";
+            var returnUrlQuery = "?indexquery=indexquery";
+            var returnUrl = returnUrlPath + returnUrlQuery;
+
+            var context = MakeContext(returnUrlPath, returnUrlQuery);
+
+            var controller = new ManagerController(
+                context.ActivitiesDao,
+                context.BranchesDao,
+                context.CarsDao)
+            {
+                ControllerContext = context.ControllerContext
+            };
+
+            var r = controller.RemoveActivities(returnUrl) as ViewResult;
+            Assert.NotNull(r);
+            Assert.Null(r.ViewName);
+            var vm = r.Model as RemoveActivitiesViewModel;
+            Assert.NotNull(vm);
+
+            Assert.Equal(returnUrl, vm.ReturnUrl);
+            Assert.True(vm.ToDate > DateTime.Now.AddHours(-1));
+            Assert.True(vm.ToDate < DateTime.Now.AddHours(1));
+        }
+
+        [Fact]
+        public async void RemoveActivities_Post()
+        {
+            var returnUrlPath = "/index";
+            var returnUrlQuery = "?indexquery=indexquery";
+            var returnUrl = returnUrlPath + returnUrlQuery;
+
+            var context = MakeContext(returnUrlPath, returnUrlQuery);
+
+            DateTime startDate = DateTime.Now;
+            DateTime endDate = startDate.AddMinutes(120);
+            DateTime removeToDate = startDate.AddMinutes(60);
+
+            var random = new Random();
+            for (int i = 0; i < 100; ++i)
+            {
+                context.Activities.Add(new Activity
+                {
+                    Id = i,
+                    Type = ActivityType.PostCreated,
+                    DateTime = startDate.AddMinutes(random.Next() % 120),
+                });
+            }
+
+            var controller = new ManagerController(
+                context.ActivitiesDao,
+                context.BranchesDao,
+                context.CarsDao)
+            {
+                ControllerContext = context.ControllerContext
+            };
+
+            var expectedActivities = context.Activities.ToList();
+            expectedActivities.RemoveAll(a => a.DateTime < removeToDate);
+
+            var vm = new RemoveActivitiesViewModel
+            {
+                ToDate = removeToDate,
+                ReturnUrl = returnUrl
+            };
+
+            var r = await controller.RemoveActivities(vm) as RedirectResult;
+            Assert.NotNull(r);
+            Assert.Equal(returnUrl, r.Url);
+            Assert.Equal(expectedActivities, context.Activities);
         }
     }
 }

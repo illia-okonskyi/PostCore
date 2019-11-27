@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PostCore.Core;
 using PostCore.Core.Activities;
 using PostCore.Core.Services.Dao;
 using PostCore.Core.Users;
@@ -77,8 +78,30 @@ namespace PostCore.MainApp.Controllers
                 AllBranches = await _branchesDao.GetAllAsync(),
                 AllCars = await _carsDao.GetAllAsync(),
                 Activities = activities.ToPaginatedList(options.Page, PageSize),
-                CurrentListOptions = options
+                CurrentListOptions = options,
+                ReturnUrl = HttpContext.Request.PathAndQuery()
             });
+        }
+
+        public IActionResult RemoveActivities(string returnUrl)
+        {
+            return View(new RemoveActivitiesViewModel
+            {
+                ToDate = DateTime.Now,
+                ReturnUrl = returnUrl
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveActivities(RemoveActivitiesViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+
+            await _activitiesDao.RemoveToDateAsync(vm.ToDate);
+            return Redirect(vm.ReturnUrl);
         }
     }
 }

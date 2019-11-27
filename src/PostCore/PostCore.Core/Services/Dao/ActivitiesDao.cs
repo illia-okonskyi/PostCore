@@ -20,6 +20,7 @@ namespace PostCore.Core.Services.Dao
             long? filterBranchId = null,
             long? filterCarId = null);
         Task CreateAsync(Activity activity);
+        Task RemoveToDateAsync(DateTime date);
     }
 
     public class ActivitiesDao : IActivitiesDao
@@ -84,6 +85,13 @@ namespace PostCore.Core.Services.Dao
         public async Task CreateAsync(Activity activity)
         {
             await _dbContext.Activity.AddAsync(activity);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task RemoveToDateAsync(DateTime date)
+        {
+            var activities = _dbContext.Activity.Where(a => a.DateTime < date);
+            _dbContext.Activity.RemoveRange(activities);
             await _dbContext.SaveChangesAsync();
         }
     }

@@ -1,0 +1,24 @@
+﻿@model PostCore.MainApp.ViewModels.Manager.RemoveActivitiesViewModel
+
+@{
+    ViewBag.Title = "Manager - Remove activities";
+    Layout = "_MainLayout";
+}
+
+<div class="card m-2">
+    <h5 class="card-header">Remove to date:</h5>
+    <div class="card-body">
+        <form asp-action="RemoveActivities" method="post">
+            <input asp-for="ReturnUrl" />
+            <div class="form-group">
+                <label asp-for="ToDate"></label>
+                <div><span asp-validation-for="ToDate" class="text-danger"></span></div>
+                <input type="text" asp-for="ToDate" class="form-control" />
+            </div>
+            <div class="text-center">
+                <button class="btn btn-primary" type="submit">Remove</button>
+                <a href="@Model.ReturnUrl" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
