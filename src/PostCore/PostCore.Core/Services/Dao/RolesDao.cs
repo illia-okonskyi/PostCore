@@ -44,7 +44,7 @@ namespace PostCore.Core.Services.Dao
 
         public async Task<IEnumerable<Role>> GetAllAsync(bool includeAdmin = true)
         {
-            var roles = _roleManager.Roles;
+            var roles = _roleManager.Roles.AsNoTracking();
             if (!includeAdmin)
             {
                 roles = roles.Where(r => r.Name != Role.Names.Admin);

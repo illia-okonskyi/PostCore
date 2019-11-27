@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PostCore.Core.Activities;
 using PostCore.Core.DbContext;
-using PostCore.Utils;
 
 namespace PostCore.Core.Services.Dao
 {
@@ -42,7 +41,7 @@ namespace PostCore.Core.Services.Dao
             long? filterCarId = null)
         {
             // 1) Filter
-            var activities = _dbContext.Activity.AsQueryable();
+            var activities = _dbContext.Activity.AsNoTracking().AsQueryable();
             if (filterType.HasValue)
             {
                 activities = activities.Where(a => a.Type == filterType.Value);

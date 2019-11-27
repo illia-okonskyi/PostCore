@@ -54,7 +54,7 @@ namespace PostCore.Core.Services.Dao
             }
 
             // 2) Filter
-            var branches = _dbContext.Branch.AsQueryable();
+            var branches = _dbContext.Branch.AsNoTracking().AsQueryable();
             if (!string.IsNullOrEmpty(filterName))
             {
                 branches = branches.Where(b => b.Name.Contains(filterName));

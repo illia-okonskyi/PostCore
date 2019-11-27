@@ -54,7 +54,7 @@ namespace PostCore.Core.Services.Dao
             }
 
             // 2) Filter
-            var cars = _dbContext.Car.AsQueryable();
+            var cars = _dbContext.Car.AsNoTracking().AsQueryable();
             if (!string.IsNullOrEmpty(filterModel))
             {
                 cars = cars.Where(c => c.Model.Contains(filterModel));
