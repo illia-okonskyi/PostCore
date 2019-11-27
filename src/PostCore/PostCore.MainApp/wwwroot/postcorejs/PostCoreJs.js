@@ -7,9 +7,9 @@ var PostCoreJs = {};
         static SortOrderAscending = "Ascending";
         static SortOrderDescending = "Descending";
 
-        static _partsSplitter = '&';
-        static _filterKeyValuePairsSplitter = ';';
-        static _filterKeyValueSplitter = ':';
+        static _partsSplitter = "&&";
+        static _filterKeyValuePairsSplitter = ";;";
+        static _filterKeyValueSplitter = "::";
         static _filtersPrefix = "filters=";
         static _sortKeyPrefix = "sortKey=";
         static _sortOrderPrefix = "sortOrder=";

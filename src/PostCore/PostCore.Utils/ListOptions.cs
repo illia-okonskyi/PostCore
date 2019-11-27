@@ -26,9 +26,9 @@ namespace PostCore.Utils
 
     public class ListOptionsConverter : TypeConverter
     {
-        const char PartsSplitter = '&';
-        const char FilterKeyValuePairsSplitter = ';';
-        const char FilterKeyValueSplitter = ':';
+        const string PartsSplitter = "&&";
+        const string FilterKeyValuePairsSplitter = ";;";
+        const string FilterKeyValueSplitter = "::";
         const string FiltersPrefix = "filters=";
         const string SortKeyPrefix = "sortKey=";
         const string SortOrderPrefix = "sortOrder=";
