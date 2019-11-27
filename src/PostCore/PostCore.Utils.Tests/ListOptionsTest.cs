@@ -21,20 +21,20 @@ namespace PostCore.Utils.Tests
             Assert.Null(converter.ConvertFrom("snghinrighnr"));
 
             // Wrong parts count
-            Assert.Null(converter.ConvertFrom("p1&p2&p3"));
+            Assert.Null(converter.ConvertFrom("p1&&p2&&p3"));
 
             // No parts prefixes
-            Assert.Null(converter.ConvertFrom("1&sortKey=1&sortOrder=1&page=1"));
-            Assert.Null(converter.ConvertFrom("filters1&1&sortOrder=1&page=1"));
-            Assert.Null(converter.ConvertFrom("filters=1&sortKey=1&1&page=1"));
-            Assert.Null(converter.ConvertFrom("filters=1&sortKey=1&sortOrder=1&1"));
+            Assert.Null(converter.ConvertFrom("1&&sortKey=1&&sortOrder=1&&page=1"));
+            Assert.Null(converter.ConvertFrom("filters1&&1&&sortOrder=1&&page=1"));
+            Assert.Null(converter.ConvertFrom("filters=1&&sortKey=1&&1&page=1"));
+            Assert.Null(converter.ConvertFrom("filters=1&&sortKey=1&&sortOrder=1&&1"));
 
             // Wrong filters format
-            Assert.Null(converter.ConvertFrom("filters=1&sortKey=1&sortOrder=1&page=1"));
-            Assert.Null(converter.ConvertFrom("filters=1;&sortKey=1&sortOrder=1&page=1"));
+            Assert.Null(converter.ConvertFrom("filters=1&&sortKey=1&&sortOrder=1&&page=1"));
+            Assert.Null(converter.ConvertFrom("filters=1;;&&sortKey=1&&sortOrder=1&&page=1"));
 
             // Defaults
-            var lo = (ListOptions)converter.ConvertFrom("filters=&sortKey=&sortOrder=&page=");
+            var lo = (ListOptions)converter.ConvertFrom("filters=&&sortKey=&&sortOrder=&&page=");
             Assert.NotNull(lo);
             Assert.Empty(lo.Filters);
             Assert.Equal("", lo.SortKey);
@@ -42,7 +42,7 @@ namespace PostCore.Utils.Tests
             Assert.Equal(1, lo.Page);
 
             // Fully ok
-            lo = (ListOptions)converter.ConvertFrom("filters=key1:value1;key2:value2;key3:&sortKey=sortKey&sortOrder=Ascending&page=3");
+            lo = (ListOptions)converter.ConvertFrom("filters=key1::value1;;key2::value2;;key3::&&sortKey=sortKey&&sortOrder=Ascending&&page=3");
             Assert.NotNull(lo);
             Assert.Equal(new Dictionary<string, string>
             {
@@ -67,7 +67,7 @@ namespace PostCore.Utils.Tests
             // Defaults
             var lo = new ListOptions();
             Assert.Equal(
-                "filters=&sortKey=&sortOrder=NoSort&page=1",
+                "filters=&&sortKey=&&sortOrder=NoSort&&page=1",
                 converter.ConvertToString(lo));
 
             // Filled
@@ -82,7 +82,7 @@ namespace PostCore.Utils.Tests
             lo.SortOrder = SortOrder.Ascending;
             lo.Page = 3;
             Assert.Equal(
-                "filters=key1:value1;key2:value2;key3:;key4:&sortKey=sortKey&sortOrder=Ascending&page=3",
+                "filters=key1::value1;;key2::value2;;key3::;;key4::&&sortKey=sortKey&&sortOrder=Ascending&&page=3",
                 converter.ConvertToString(lo));
         }
     }
