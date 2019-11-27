@@ -105,8 +105,8 @@ namespace PostCore.MainApp.Tests.Controllers
             var context = MakeContext();
 
             ActivityType? filterType = ActivityType.PostCreated;
-            DateTime? filterFrom = DateTime.Now.AddMilliseconds(25);
-            DateTime? filterTo = DateTime.Now.AddMilliseconds(75);
+            DateTime? filterFrom = DateTime.Today;
+            DateTime? filterTo = filterFrom.Value.AddMinutes(75);
             long? filterPostId = context.Mail[0].Id;
             long? filterBranchId = context.Branches[0].Id;
             long? filterCarId = context.Cars[0].Id;
@@ -122,9 +122,7 @@ namespace PostCore.MainApp.Tests.Controllers
                     {"postId", filterPostId.Value.ToString()},
                     {"branchId", filterBranchId.Value.ToString()},
                     {"carId", filterCarId.Value.ToString()}
-                },
-                SortKey = "address",
-                SortOrder = SortOrder.Descending
+                }
             };
             var random = new Random();
             for (int i = 0; i < 100; ++i)
@@ -134,7 +132,7 @@ namespace PostCore.MainApp.Tests.Controllers
                     Id = i,
                     Type = (ActivityType)(random.Next() % (int)(ActivityType.PostDelivered + 1)),
                     Message = "message" + random.Next(),
-                    DateTime = DateTime.Now.AddMilliseconds(random.Next() % 100),
+                    DateTime = filterFrom.Value.AddMinutes(random.Next() % 100),
                     User = "user" + random.Next(),
                     PostId = random.Next() % context.Mail.Count(),
                     BranchId = random.Next() % context.Branches.Count(),
