@@ -71,6 +71,7 @@ namespace PostCore.MainApp
             services.AddScoped<IUsersDao, UsersDao>();
             services.AddScoped<IBranchesDao, BranchesDao>();
             services.AddScoped<ICarsDao, CarsDao>();
+            services.AddScoped<IActivitiesDao, ActivitiesDao>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.PopulateDependencyViews();
