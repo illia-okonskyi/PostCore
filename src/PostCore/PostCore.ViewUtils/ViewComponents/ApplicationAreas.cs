@@ -11,6 +11,7 @@ namespace PostCore.ViewUtils.ViewComponents
     {
         public string DisplayName { get; set; }
         public string Controller { get; set; }
+        public string Action { get; set; } = "Index";
         public List<string> ForRoles { get; set; }
     }
 
@@ -25,7 +26,7 @@ namespace PostCore.ViewUtils.ViewComponents
         {
             new AreaInfo
             {
-                DisplayName = "Manage users",
+                DisplayName = "Admin - Manage users",
                 Controller = "Users",
                 ForRoles = new List<string>
                 {
@@ -34,7 +35,7 @@ namespace PostCore.ViewUtils.ViewComponents
             },
             new AreaInfo
             {
-                DisplayName = "Manage branches",
+                DisplayName = "Admin - Manage branches",
                 Controller = "Branches",
                 ForRoles = new List<string>
                 {
@@ -43,7 +44,7 @@ namespace PostCore.ViewUtils.ViewComponents
             },
             new AreaInfo
             {
-                DisplayName = "Manage cars",
+                DisplayName = "Admin - Manage cars",
                 Controller = "Cars",
                 ForRoles = new List<string>
                 {
