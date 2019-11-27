@@ -1,0 +1,216 @@
+﻿@model PostCore.MainApp.ViewModels.Manager.IndexViewModel
+
+@{
+    ViewBag.Title = "Manager - Activities";
+    Layout = "_MainLayout";
+
+    var optionsFormId = "optionsForm";
+    var optionsInputId = "options";
+    var submitButtonId = "options";
+    var filterKeyType = "type";
+    var filterKeyMessage = "message";
+    var filterKeyFrom = "from";
+    var filterKeyTo = "to";
+    var filterKeyUser = "user";
+    var filterKeyPostId = "postId";
+    var filterKeyBranchId = "branchId";
+    var filterKeyCarId = "carId";
+    var filterKeyToInputId = new Dictionary<string, string>
+{
+{ filterKeyType, "options_filters_type" },
+{ filterKeyMessage, "options_filters_message" },
+{ filterKeyFrom, "options_filters_from" },
+{ filterKeyTo, "options_filters_to" },
+{ filterKeyUser, "options_filters_user" },
+{ filterKeyPostId, "options_filters_postId" },
+{ filterKeyBranchId, "options_filters_branchId" },
+{ filterKeyCarId, "options_filters_carId" }
+};
+
+    string ActivityTypeString(PostCore.Core.Activities.ActivityType t)
+    {
+        switch (t)
+        {
+            case PostCore.Core.Activities.ActivityType.PostCreated:
+                return "Created";
+            case PostCore.Core.Activities.ActivityType.PostMovedToBranchStock:
+                return "Moved to branch stock";
+            case PostCore.Core.Activities.ActivityType.PostMovedToCar:
+                return "Moved to car";
+            case PostCore.Core.Activities.ActivityType.PostDelivered:
+                return "Delivered";
+
+            default:
+                return "";
+        }
+    }
+
+    string ActivityTypeClasses(PostCore.Core.Activities.ActivityType t)
+    {
+        switch (t)
+        {
+            case PostCore.Core.Activities.ActivityType.PostCreated:
+                return "bg-success text-white";
+            case PostCore.Core.Activities.ActivityType.PostMovedToBranchStock:
+                return "bg-info text-white";
+            case PostCore.Core.Activities.ActivityType.PostMovedToCar:
+                return "bg-danger text-white";
+            case PostCore.Core.Activities.ActivityType.PostDelivered:
+                return "bg-dark text-white";
+
+            default:
+                return "";
+        }
+    }
+}
+
+<script>
+    $(document).ready(function () {
+        var loc = new PostCoreJs.ListOptionsContext("@Model.CurrentListOptions");
+        loc.formId = "@optionsFormId";
+        loc.optionsInputId = "@optionsInputId";
+        loc.addFilterKeyInputPair("@filterKeyType", "@filterKeyToInputId[filterKeyType]");
+        loc.addFilterKeyInputPair("@filterKeyMessage", "@filterKeyToInputId[filterKeyMessage]");
+        loc.addFilterKeyInputPair("@filterKeyFrom", "@filterKeyToInputId[filterKeyFrom]");
+        loc.addFilterKeyInputPair("@filterKeyTo", "@filterKeyToInputId[filterKeyTo]");
+        loc.addFilterKeyInputPair("@filterKeyUser", "@filterKeyToInputId[filterKeyUser]");
+        loc.addFilterKeyInputPair("@filterKeyPostId", "@filterKeyToInputId[filterKeyPostId]");
+        loc.addFilterKeyInputPair("@filterKeyBranchId", "@filterKeyToInputId[filterKeyBranchId]");
+        loc.addFilterKeyInputPair("@filterKeyCarId", "@filterKeyToInputId[filterKeyCarId]");
+        loc.resetPageOnSubmit = true;
+
+        loc.fillForm();
+        loc.setupSubmitButton("@submitButtonId");
+    });
+</script>
+
+<div class="card m-2">
+    <h5 class="card-header">Filters:</h5>
+    <div class="card-body">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyFrom]">Date from:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyFrom]" />
+                <div><span validation-key="@filterKeyFrom" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyTo]">Date to:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyTo]" />
+                <div><span validation-key="@filterKeyTo" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyType]">Type:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="@filterKeyToInputId[filterKeyType]">
+                    <option value="" selected>All</option>
+                    @foreach (var at in Model.AllActivityTypes)
+                    {
+                        var selected = Model.CurrentListOptions.Filters[filterKeyType] == at.ToString();
+                        <option class="@ActivityTypeClasses(at)" value="@at" selected="@selected">@ActivityTypeString(at)</option>
+                    }
+                </select>
+                <div><span validation-key="@filterKeyType" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyPostId]">Post ID:</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" id="@filterKeyToInputId[filterKeyPostId]" />
+                <div><span validation-key="@filterKeyPostId" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyUser]">User:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyUser]" />
+                <div><span validation-key="@filterKeyUser" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyMessage]">Message:</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="@filterKeyToInputId[filterKeyMessage]" />
+                <div><span validation-key="@filterKeyMessage" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyBranchId]">Branch:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="@filterKeyToInputId[filterKeyBranchId]">
+                    <option value="" selected>All</option>
+                    @foreach (var b in Model.AllBranches)
+                    {
+                        var selected = Model.CurrentListOptions.Filters[filterKeyBranchId] == b.Id.ToString();
+                        <option value="@b.Id" selected="@selected">@b.Name</option>
+                    }
+                </select>
+                <div><span validation-key="@filterKeyBranchId" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyCarId]">Car:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="@filterKeyToInputId[filterKeyCarId]">
+                    <option value="" selected>All</option>
+                    @foreach (var c in Model.AllCars)
+                    {
+                        var selected = Model.CurrentListOptions.Filters[filterKeyCarId] == c.Id.ToString();
+                        <option value="@c.Id" selected="@selected">@c.Number</option>
+                    }
+                </select>
+                <div><span validation-key="@filterKeyCarId" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <button class="btn btn-primary" id="@submitButtonId">Filter</button>
+            </div>
+        </div>
+        <form asp-action="Index" id="@optionsFormId" method="get">
+            <input type="hidden" id="@optionsInputId" name="@optionsInputId" />
+        </form>
+    </div>
+</div>
+
+<div class="card m-2">
+    <h5 class="card-header">Activities:</h5>
+    <div class="card-body">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Post ID</th>
+                    <th>User</th>
+                    <th>Message</th>
+                    <th>Branch</th>
+                    <th>Car</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var activity in Model.Activities)
+                {
+                <tr class="@ActivityTypeClasses(activity.Type)">
+                    <td>@activity.DateTime</td>
+                    <td>@ActivityTypeString(activity.Type)</td>
+                    <td>@activity.PostId</td>
+                    <td>@activity.User</td>
+                    <td>@activity.Message</td>
+                    <td>@(activity.Branch?.Name ?? "- No branch -") </td>
+                    <td>@(activity.Car?.Number ?? "- No car -")</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-center"
+             list-options="@Model.CurrentListOptions"
+             pagination-info="@Model.Activities.PaginationInfo"
+             page-class="btn btn-outline-primary"
+             page-class-current="active"></div>
+
+    </div>
+</div>
