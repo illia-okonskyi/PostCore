@@ -42,7 +42,11 @@ namespace PostCore.Core.Services.Dao
             long? filterCarId = null)
         {
             // 1) Filter
-            var activities = _dbContext.Activity.AsNoTracking().AsQueryable();
+            var activities = _dbContext.Activity
+                .AsNoTracking()
+                .Include(a => a.Branch)
+                .Include(a => a.Car)
+                .AsQueryable();
             if (filterType.HasValue)
             {
                 activities = activities.Where(a => a.Type == filterType.Value);
