@@ -50,7 +50,6 @@ namespace PostCore.MainApp.Controllers
             {
                 options = DefaultListOptions;
                 options.Filters["from"] = DateTime.Now.AddHours(-1).ToString("g");
-                options.Filters["to"] = DateTime.Now.ToString("g");
             }
 
             NullableExtensions.TryParse(options.Filters["type"], out ActivityType? filterType);
