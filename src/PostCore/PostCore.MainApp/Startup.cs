@@ -72,6 +72,7 @@ namespace PostCore.MainApp
             services.AddScoped<IBranchesDao, BranchesDao>();
             services.AddScoped<ICarsDao, CarsDao>();
             services.AddScoped<IActivitiesDao, ActivitiesDao>();
+            services.AddTransient<IMailDao, MailDao>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.PopulateDependencyViews();
