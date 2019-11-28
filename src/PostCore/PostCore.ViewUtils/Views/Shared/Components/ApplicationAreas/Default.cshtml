@@ -19,9 +19,8 @@
             <div class="dropdown-menu" aria-labelledby="navbarAreasDropdown">
                 @foreach (var ai in Model.AreasForUser)
                 {
-                    <a asp-action="Index"
+                    <a asp-action="@ai.Action"
                        asp-controller="@ai.Controller"
-                       asp-action="@ai.Action"
                        class="dropdown-item">
                         @ai.DisplayName
                     </a>
