@@ -7,6 +7,7 @@ using PostCore.Core.Exceptions;
 using PostCore.Core.Users;
 using PostCore.MainApp.ViewModels.Message;
 using PostCore.MainApp.ViewModels.Account;
+using PostCore.ViewUtils;
 using System;
 
 namespace PostCore.MainApp.Controllers
@@ -201,7 +202,7 @@ namespace PostCore.MainApp.Controllers
                 ModelState.AddModelError("", e.Message);
             }
 
-            TempData["message"] = MessageViewModel.MakeInfo("Password changed");
+            TempData.Set("message", MessageViewModel.MakeInfo("Password changed"));
             return View(vm);
         }
     }

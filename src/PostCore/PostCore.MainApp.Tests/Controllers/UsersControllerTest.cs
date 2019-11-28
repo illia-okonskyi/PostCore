@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Http;
+using PostCore.MainApp.ViewModels.Message;
 
 namespace PostCore.MainApp.Tests.Controllers
 {
@@ -40,6 +41,7 @@ namespace PostCore.MainApp.Tests.Controllers
             public List<Role> Roles { get; set; } = new List<Role>();
             public List<User> Users { get; set; } = new List<User>();
             public Dictionary<string, object> TempData { get; set; } = new Dictionary<string, object>();
+            public delegate void TryGetTempDataValueCallback(string key, out object value);
         }
 
         Context MakeContext(string path = "/", string query = "?query=query")
@@ -154,8 +156,14 @@ namespace PostCore.MainApp.Tests.Controllers
             context.ControllerContext = controllerContext;
 
             var tempDataDictionaryMock = new Mock<ITempDataDictionary>();
-            tempDataDictionaryMock.Setup(m => m[It.IsAny<string>()])
-                .Returns((string key) => context.TempData[key]);
+            var tryGetValueCallback = new Context.TryGetTempDataValueCallback((string key, out object value) =>
+            {
+                context.TempData.TryGetValue(key, out value);
+            });
+            object dummy;
+            tempDataDictionaryMock.Setup(m => m.TryGetValue(It.IsAny<string>(), out dummy))
+                .Callback(tryGetValueCallback)
+                .Returns(true);
             tempDataDictionaryMock.SetupSet(m => m[It.IsAny<string>()] = It.IsAny<object>())
                 .Callback((string key, object o) => context.TempData[key] = o);
             context.TempDataDictionary = tempDataDictionaryMock.Object;
@@ -487,7 +495,7 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.NotNull(r);
             Assert.Same(vm, r.Model);
             Assert.Equal(DefaultPassword, context.Users.First().PasswordHash);
-            Assert.NotNull(controller.TempData["message"]);
+            Assert.NotNull(controller.TempData.Get<MessageViewModel>("message"));
         }
 
         [Fact]

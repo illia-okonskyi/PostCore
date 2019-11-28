@@ -169,13 +169,14 @@ namespace PostCore.MainApp.Controllers
             try
             {
                 await _usersDao.ResetPasswordAsync(vm.Id, _configration["Config:Users:DefaultPassword"]);
-                TempData["message"] = MessageViewModel.MakeInfo("Password reset succeded");
+                TempData.Set("message", MessageViewModel.MakeInfo("Password reset succeded"));
 
             }
             catch (Exception e)
             {
-                TempData["message"] = MessageViewModel.MakeError(
-                    "Failed to reset password: " + e.Message);
+                TempData.Set(
+                    "message",
+                    MessageViewModel.MakeError("Failed to reset password: " + e.Message));
             }
 
             vm.AllRoles = await _rolesDao.GetAllAsync(false);

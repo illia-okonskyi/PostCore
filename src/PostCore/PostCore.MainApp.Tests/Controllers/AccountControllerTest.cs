@@ -11,7 +11,9 @@ using PostCore.Core.Services.Dao;
 using PostCore.Core.Users;
 using PostCore.MainApp.Controllers;
 using PostCore.MainApp.ViewModels.Account;
+using PostCore.MainApp.ViewModels.Message;
 using PostCore.Utils;
+using PostCore.ViewUtils;
 using Xunit;
 
 namespace PostCore.MainApp.Tests.Controllers
@@ -46,6 +48,7 @@ namespace PostCore.MainApp.Tests.Controllers
             public Car CurrentCar { get; set; }
 
             public Dictionary<string, object> TempData { get; set; } = new Dictionary<string, object>();
+            public delegate void TryGetTempDataValueCallback(string key, out object value);
 
             static List<User> MakeUsers()
             {
@@ -192,8 +195,14 @@ namespace PostCore.MainApp.Tests.Controllers
             context.CurrentUserService = currentUserServiceMock.Object;
 
             var tempDataDictionaryMock = new Mock<ITempDataDictionary>();
-            tempDataDictionaryMock.Setup(m => m[It.IsAny<string>()])
-                .Returns((string key) => context.TempData[key]);
+            var tryGetValueCallback = new Context.TryGetTempDataValueCallback((string key, out object value) =>
+            {
+                context.TempData.TryGetValue(key, out value);
+            });
+            object dummy;
+            tempDataDictionaryMock.Setup(m => m.TryGetValue(It.IsAny<string>(), out dummy))
+                .Callback(tryGetValueCallback)
+                .Returns(true);
             tempDataDictionaryMock.SetupSet(m => m[It.IsAny<string>()] = It.IsAny<object>())
                 .Callback((string key, object o) => context.TempData[key] = o);
             context.TempDataDictionary = tempDataDictionaryMock.Object;
@@ -570,7 +579,7 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Equal(vm.UserId, returnedVm.UserId);
             Assert.Equal(vm.ReturnUrl, returnedVm.ReturnUrl);
             Assert.Equal(vm.NewPassword, user.PasswordHash);
-            Assert.NotNull(controller.TempData["message"]);
+            Assert.NotNull(controller.TempData.Get<MessageViewModel>("message"));
         }
     }
 }

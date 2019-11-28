@@ -30,21 +30,23 @@
         </div>
     </nav>
     <div class="p-2">
-        @if (TempData["message"] != null)
-        {
-            var message = TempData["message"] as PostCore.MainApp.ViewModels.Message.MessageViewModel;
-            var alertClass = "";
-            switch (message.Type)
+        @{
+            var message = TempData.Get<PostCore.MainApp.ViewModels.Message.MessageViewModel>("message");
+            if (message != null)
             {
-                case PostCore.MainApp.ViewModels.Message.MessageType.Info:
-                    alertClass = "alert-success";
-                    break;
-                case PostCore.MainApp.ViewModels.Message.MessageType.Error:
-                    alertClass = "alert-danger";
-                    break;
-            };
+                var alertClass = "";
+                switch (message.Type)
+                {
+                    case PostCore.MainApp.ViewModels.Message.MessageType.Info:
+                        alertClass = "alert-success";
+                        break;
+                    case PostCore.MainApp.ViewModels.Message.MessageType.Error:
+                        alertClass = "alert-danger";
+                        break;
+                };
 
-            <div class="alert @alertClass">@message.Message</div>
+                <div class="alert @alertClass">@message.Message</div>
+            }
         }
         @RenderBody()
     </div>
