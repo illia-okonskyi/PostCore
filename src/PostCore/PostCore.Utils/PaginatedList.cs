@@ -17,6 +17,26 @@ namespace PostCore.Utils
 
     public class PaginatedList<T> : List<T>
     {
+        public PaginatedList()
+        {
+            PaginationInfo = new PaginationInfo
+            {
+                PageSize = 1,
+                CurrentPage = 1,
+                TotalPages = 1
+            };
+        }
+
+        public PaginatedList(long pageSize)
+        {
+            PaginationInfo = new PaginationInfo
+            {
+                PageSize = Math.Max(1, pageSize),
+                CurrentPage = 1,
+                TotalPages = 1
+            };
+        }
+
         public PaginatedList(IEnumerable<T> source, long count, long currentPage, long pageSize)
         {
             PaginationInfo = new PaginationInfo
