@@ -59,6 +59,26 @@ namespace PostCore.ViewUtils.ViewComponents
                 {
                     Role.Names.Admin, Role.Names.Manager
                 }
+            },
+            new AreaInfo
+            {
+                DisplayName = "Operator - Create post",
+                Controller = "Operator",
+                Action = "CreatePost",
+                ForRoles = new List<string>
+                {
+                    Role.Names.Admin, Role.Names.Operator
+                }
+            },
+            new AreaInfo
+            {
+                DisplayName = "Operator - Deliver post",
+                Controller = "Operator",
+                Action = "DeliverPost",
+                ForRoles = new List<string>
+                {
+                    Role.Names.Admin, Role.Names.Operator
+                }
             }
         };
 
