@@ -28,8 +28,19 @@ namespace PostCore.Core.Services.Dao
             PostState? filterState = null,
             string sortKey = null,
             SortOrder sortOrder = SortOrder.Ascending);
+        Task<IEnumerable<Post>> GetAllForStock(
+            Branch branch,
+            bool withoutAddressOnly = false,
+            long? filterSourceBranchId = null,
+            long? filterDestinationBranchId = null,
+            string filterPersonFrom = null,
+            string filterPersonTo = null,
+            string filterAddressTo = null,
+            string sortKey = null,
+            SortOrder sortOrder = SortOrder.Ascending);
         Task CreateAsync(Post post, User user);
         Task DeliverAsync(long postId, User user);
+        Task StockAsync(long postId, string address, User user);
     }
 
     public class MailDao : IMailDao
@@ -133,6 +144,67 @@ namespace PostCore.Core.Services.Dao
             return await mail.ToListAsync();
         }
 
+        public async Task<IEnumerable<Post>> GetAllForStock(
+            Branch branch,
+            bool withoutAddressOnly = false,
+            long? filterSourceBranchId = null,
+            long? filterDestinationBranchId = null,
+            string filterPersonFrom = null,
+            string filterPersonTo = null,
+            string filterAddressTo = null,
+            string sortKey = null,
+            SortOrder sortOrder = SortOrder.Ascending)
+        {
+            // 1) Check sortKey
+            if (string.IsNullOrEmpty(sortKey))
+            {
+                sortKey = AcceptableSortKeys.First();
+            }
+            if (!AcceptableSortKeys.Contains(sortKey))
+            {
+                throw new ArgumentException("Must be one of AcceptableSortKeys", nameof(sortKey));
+            }
+
+            // 2) Filter
+            var mail = _dbContext.Post
+                .AsNoTracking()
+                .Include(p => p.SourceBranch)
+                .Include(p => p.DestinationBranch)
+                .AsQueryable();
+            if (withoutAddressOnly)
+            {
+                mail = mail.Where(p => p.BranchStockAddress == null);
+            }
+            if (filterSourceBranchId.HasValue)
+            {
+                mail = mail.Where(p => p.SourceBranchId == filterSourceBranchId.Value);
+            }
+            if (filterDestinationBranchId.HasValue)
+            {
+                mail = mail.Where(p => p.DestinationBranchId == filterDestinationBranchId.Value);
+            }
+            if (!string.IsNullOrEmpty(filterPersonFrom))
+            {
+                mail = mail.Where(p => p.PersonFrom.Contains(filterPersonFrom));
+            }
+            if (!string.IsNullOrEmpty(filterPersonTo))
+            {
+                mail = mail.Where(p => p.PersonTo.Contains(filterPersonTo));
+            }
+            if (!string.IsNullOrEmpty(filterAddressTo))
+            {
+                mail = mail.Where(p => p.AddressTo.Contains(filterAddressTo));
+            }
+            mail = mail
+                .Where(p => p.BranchId == branch.Id)
+                .Where(p => p.State == PostState.Created || p.State == PostState.InBranchStock);
+
+            // 3) Sort
+            mail = mail.Order(sortKey, sortOrder);
+
+            return await mail.ToListAsync();
+        }
+
         public async Task CreateAsync(Post post, User user)
         {
             using (var transaction = await _dbContext.Database.BeginTransactionAsync())
@@ -184,6 +256,40 @@ namespace PostCore.Core.Services.Dao
                     User = $"{user.FirstName} {user.LastName}",
                     PostId = post.Id,
                     BranchId = post.DestinationBranchId
+                });
+                await _dbContext.SaveChangesAsync();
+
+                try
+                {
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                }
+            }
+        }
+
+        public async Task StockAsync(long postId, string address, User user)
+        {
+            using (var transaction = await _dbContext.Database.BeginTransactionAsync())
+            {
+                var post = await _dbContext.Post.Where(p => p.Id == postId).FirstOrDefaultAsync();
+                if (post == null)
+                {
+                    throw new ArgumentException("Post with such id not found", nameof(postId));
+                }
+
+                post.BranchStockAddress = address;
+                post.State = PostState.InBranchStock;
+                _dbContext.Activity.Add(new Activity
+                {
+                    Type = ActivityType.PostMovedToBranchStock,
+                    Message = $"Post {post.Id} moved to branch stock with adddress {address}",
+                    DateTime = DateTime.Now,
+                    User = $"{user.FirstName} {user.LastName}",
+                    PostId = post.Id,
+                    BranchId = post.BranchId
                 });
                 await _dbContext.SaveChangesAsync();
 
