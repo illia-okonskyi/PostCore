@@ -56,6 +56,7 @@ namespace PostCore.MainApp.Controllers
             var vm = new IndexViewModel
             {
                 AllBranches = await _branchesDao.GetAllAsync(),
+                Mail = new PaginatedList<Post>(PageSize),
                 CurrentListOptions = options,
                 ReturnUrl = HttpContext.Request.PathAndQuery()
             };
@@ -74,7 +75,6 @@ namespace PostCore.MainApp.Controllers
             if (branch == null)
             {
                 TempData.Set("message", MessageViewModel.MakeError("Setup your branch"));
-                vm.Mail = new PaginatedList<Post>(PageSize);
                 return View(vm);
             }
             var mail = await _mailDao.GetAllForStock(

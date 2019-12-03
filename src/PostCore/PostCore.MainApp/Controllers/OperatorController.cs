@@ -105,6 +105,7 @@ namespace PostCore.MainApp.Controllers
             var vm = new DeliverPostViewModel
             {
                 CurrentListOptions = options,
+                Mail = new PaginatedList<Post>(PageSize),
                 ReturnUrl = HttpContext.Request.PathAndQuery(),
             };
 
@@ -112,7 +113,6 @@ namespace PostCore.MainApp.Controllers
             if (destinationBranch == null)
             {
                 TempData.Set("message", MessageViewModel.MakeError("Setup your branch"));
-                vm.Mail = new PaginatedList<Post>(PageSize);
                 return View(vm);
             }
 
