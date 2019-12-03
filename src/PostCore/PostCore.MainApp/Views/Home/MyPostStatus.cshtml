@@ -1,0 +1,63 @@
+﻿@model PostCore.MainApp.ViewModels.Home.MyPostStatusViewModel
+
+@{
+    ViewBag.Title = "My post status";
+    Layout = "_MainLayout";
+}
+
+<div class="card m-2">
+    <h5 class="card-header">Identify your post:</h5>
+    <div class="card-body align-self-center">
+        <form asp-action="MyPostStatus" class="form-inline" method="get">
+            <label asp-for="PostId" class="col-form-label"/>
+            <input asp-for="PostId" class="form-control"/>
+            <button type="submit" class="btn btn-primary">Get status</button>
+        </form>
+    </div>
+</div>
+
+<div class="card m-2">
+    <h5 class="card-header">Post status:</h5>
+    <div class="card-body align-self-center">
+
+        @if (Model.HasInformation)
+        {
+            <div class="form-group row">
+                <label class="col font-weight-bold">Post ID:</label>
+                <label class="col">@Model.PostId</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Person from:</label>
+                <label class="col">@Model.PersonFrom</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Person to:</label>
+                <label class="col">@Model.PersonTo</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Address to:</label>
+                <label class="col">@Model.AddressTo</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Source branch:</label>
+                <label class="col">@Model.SourceBranchName</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Destination branch:</label>
+                <label class="col">@Model.DestinationBranchName</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Current branch:</label>
+                <label class="col">@(Model.CurrentBranchName?? "- No branch -")</label>
+            </div>
+            <div class="form-group row">
+                <label class="col font-weight-bold">Post state:</label>
+                <label class="col">@Model.PostState</label>
+            </div>
+        }
+        else
+        {
+            <b>No post found</b>
+        }
+    </div>
+</div>

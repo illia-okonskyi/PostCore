@@ -1,23 +1,63 @@
-﻿@model string
-
-@{
+﻿@{
     ViewBag.Title = "Index";
     Layout = "_MainLayout";
 }
 
-<h1 class="bg-dark text-center text-white">@Model</h1>
+<h1 class="bg-dark text-center text-white">Welcome to PostCore mail automation system</h1>
 
-<div class="container">
-    <div class="row">
-        <div class="col text-center">
-            <a asp-action="SayHello" class="btn btn-primary">Say hello!</a>
-        </div>
+<div class="card m-2">
+    <h5 class="card-header">About us:</h5>
+    <div class="card-body">
+        <h6>
+            About mail
+        </h6>
+        <p>
+            The <b>mail</b> or <b>post</b> is a system for physically transporting postcards,
+            letters, and parcels. A postal service can be private or public, though many governments
+            place restrictions on private systems. Since the mid-19th century, national postal
+            systems have generally been established as a government monopoly, with a fee on the
+            article prepaid. Proof of payment is usually in the form of an adhesive postage stamp,
+            but a postage meter is also used for bulk mailing. Modern private postal systems are
+            distinguished from national postal agencies by the terms "courier" or
+            "delivery service".
+            <a href="https://en.wikipedia.org/wiki/Mail">See wikipedia</a>
+        </p>
+        <h6>
+            Our employees:
+        </h6>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                <b>Operators</b> - create your post entry and deliver your post from branch stock
+                right in your hand.
+            </li>
+            <li class="list-group-item">
+                <b>Stockmen</b> - this men keep eyes on branch stocks and stores each post by
+                separate address.
+            </li>
+            <li class="list-group-item">
+                <b>Drivers</b> - special men on our cars delivers mail from one branch to another.
+            </li>
+            <li class="list-group-item">
+                <b>Couriers</b> are men who delivers post right to person which are located by
+                address you specify.
+            </li>
+            <li class="list-group-item">
+                <b>Managers</b> - watch all activities running at our mail service.
+            </li>
+            <li class="list-group-item">
+                <b>Administrator</b> - the IT specialist which main responsibility is to keep our
+                site is working right way and is being available to you in any time.
+            </li>
+        </ul>
     </div>
 </div>
 
-@await Component.InvokeAsync(nameof(Dummy),
-    new
-    {
-        header = "Dummy ViewComponent header",
-        message = "Dummy ViewComponent message"
-    })
+<div class="card m-2">
+    <h5 class="card-header">See my post status:</h5>
+    <div class="card-body align-self-center">
+        <form asp-action="MyPostStatus" class="form-inline" method="get">
+            <input id="postId" class="form-control" name="postId" type="number" />
+            <button type="submit" class="btn btn-primary">Get status</button>
+        </form>
+    </div>
+</div>

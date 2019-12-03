@@ -29,6 +29,7 @@ namespace PostCore.Core.Services.Dao
             PostState? filterState = null,
             string sortKey = null,
             SortOrder sortOrder = SortOrder.Ascending);
+        Task<Post> GetByIdAsync(long postId);
         Task<IEnumerable<Post>> GetAllForStock(
             Branch branch,
             bool withoutAddressOnly = false,
@@ -206,6 +207,17 @@ namespace PostCore.Core.Services.Dao
             mail = mail.Order(sortKey, sortOrder);
 
             return await mail.ToListAsync();
+        }
+
+        public async Task<Post> GetByIdAsync(long postId)
+        {
+            return await _dbContext.Post
+                .AsNoTracking()
+                .Include(p => p.Branch)
+                .Include(p => p.SourceBranch)
+                .Include(p => p.DestinationBranch)
+                .Where(p => p.Id == postId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task CreateAsync(Post post, User user)

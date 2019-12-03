@@ -12,7 +12,7 @@ namespace PostCore.MainApp
     {
         static readonly IList<Assembly> _assemblies = new List<Assembly>()
         {
-            Assembly.GetAssembly(typeof(ViewUtils.ViewComponents.DummyViewModel))
+            Assembly.GetAssembly(typeof(ViewUtils.ViewComponents.Account))
         };
 
         public static void PopulateDependencyViews(this IServiceCollection services)
