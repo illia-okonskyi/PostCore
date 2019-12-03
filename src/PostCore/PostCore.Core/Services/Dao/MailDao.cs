@@ -215,7 +215,7 @@ namespace PostCore.Core.Services.Dao
                 _dbContext.Activity.Add(new Activity
                 {
                     Type = ActivityType.PostCreated,
-                    Message = $"Post {post.Id} created",
+                    Message = $"Post #{post.Id} created",
                     DateTime = DateTime.Now,
                     User = $"{user.FirstName} {user.LastName}",
                     PostId = post.Id,
@@ -251,7 +251,7 @@ namespace PostCore.Core.Services.Dao
                 _dbContext.Activity.Add(new Activity
                 {
                     Type = ActivityType.PostDelivered,
-                    Message = $"Post {post.Id} delivered",
+                    Message = $"Post #{post.Id} delivered",
                     DateTime = DateTime.Now,
                     User = $"{user.FirstName} {user.LastName}",
                     PostId = post.Id,
@@ -284,8 +284,8 @@ namespace PostCore.Core.Services.Dao
                 post.State = PostState.InBranchStock;
                 _dbContext.Activity.Add(new Activity
                 {
-                    Type = ActivityType.PostMovedToBranchStock,
-                    Message = $"Post {post.Id} moved to branch stock with adddress {address}",
+                    Type = ActivityType.PostStocked,
+                    Message = $"Post #{post.Id} stocked with adddress \"{address}\"",
                     DateTime = DateTime.Now,
                     User = $"{user.FirstName} {user.LastName}",
                     PostId = post.Id,

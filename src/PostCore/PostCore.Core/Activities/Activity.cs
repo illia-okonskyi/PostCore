@@ -28,6 +28,7 @@ namespace PostCore.Core.Activities
         {
             ActivityType.PostCreated,
             ActivityType.PostMovedToBranchStock,
+            ActivityType.PostStocked,
             ActivityType.PostMovedToCar,
             ActivityType.PostDelivered
         };

@@ -4,6 +4,7 @@
     {
         PostCreated,
         PostMovedToBranchStock,
+        PostStocked,
         PostMovedToCar,
         PostDelivered
     }
