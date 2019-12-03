@@ -108,7 +108,7 @@
                         <td>@post.SourceBranch.Name</td>
                         <td>@post.DestinationBranch.Name</td>
                         <td>
-                            <form asp-action="MoveToCar" method="post" class="form-inline">
+                            <form asp-action="MovePostToCar" method="post" class="form-inline">
                                 <input type="hidden" name="postId" value="@post.Id" />
                                 <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
                                 <button type="submit" class="btn btn-primary">Move to car</button>

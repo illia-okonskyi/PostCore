@@ -81,7 +81,7 @@ namespace PostCore.MainApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> MoveToCar(long postId, string returnUrl)
+        public async Task<IActionResult> MovePostToCar(long postId, string returnUrl)
         {
             try
             {
@@ -137,7 +137,7 @@ namespace PostCore.MainApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> MoveToBranchStock(long postId, string returnUrl)
+        public async Task<IActionResult> MovePostToBranchStock(long postId, string returnUrl)
         {
             try
             {

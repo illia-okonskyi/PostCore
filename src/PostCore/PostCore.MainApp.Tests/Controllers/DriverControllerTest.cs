@@ -253,7 +253,7 @@ namespace PostCore.MainApp.Tests.Controllers
         }
 
         [Fact]
-        public async Task MoveToCar_Post()
+        public async Task MovePostToCar_Post()
         {
             var returnUrlPath = "/index";
             var returnUrlQuery = "?indexquery=indexquery";
@@ -275,7 +275,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 ControllerContext = context.ControllerContext
             };
 
-            var r = await controller.MoveToCar(postId, returnUrl) as RedirectResult;
+            var r = await controller.MovePostToCar(postId, returnUrl) as RedirectResult;
             Assert.NotNull(r);
             Assert.Equal(returnUrl, r.Url);
 
@@ -353,7 +353,7 @@ namespace PostCore.MainApp.Tests.Controllers
         }
 
         [Fact]
-        public async Task MoveToBranchStock_Post()
+        public async Task MovePostToBranchStock_Post()
         {
             var returnUrlPath = "/index";
             var returnUrlQuery = "?indexquery=indexquery";
@@ -376,7 +376,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 ControllerContext = context.ControllerContext
             };
 
-            var r = await controller.MoveToBranchStock(postId, returnUrl) as RedirectResult;
+            var r = await controller.MovePostToBranchStock(postId, returnUrl) as RedirectResult;
             Assert.NotNull(r);
             Assert.Equal(returnUrl, r.Url);
 
