@@ -82,9 +82,14 @@ namespace PostCore.MainApp.Controllers
                 await _mailDao.CreateAsync(post, user);
 
                 vm.PersonFrom = null;
+                ModelState.Remove(nameof(vm.PersonFrom));
                 vm.PersonTo = null;
+                ModelState.Remove(nameof(vm.PersonTo));
                 vm.DestinationBranchId = null;
+                ModelState.Remove(nameof(vm.DestinationBranchId));
                 vm.AddressTo = null;
+                ModelState.Remove(nameof(vm.AddressTo));
+
                 TempData.Set("message", MessageViewModel.MakeInfo($"Post #{post.Id} created"));
                 return View(vm);
             }
