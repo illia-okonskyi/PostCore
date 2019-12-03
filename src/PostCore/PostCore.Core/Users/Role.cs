@@ -7,7 +7,7 @@ namespace PostCore.Core.Users
     {
         private static readonly List<string> HasBranchRoleNames = new List<string>
         {
-            Names.Admin, Names.Operator, Names.Stockman, Names.Courier
+            Names.Admin, Names.Operator, Names.Driver, Names.Stockman, Names.Courier
         };
         private static readonly List<string> HasCarRoleNames = new List<string>
         {

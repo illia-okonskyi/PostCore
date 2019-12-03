@@ -88,6 +88,26 @@ namespace PostCore.ViewUtils.ViewComponents
                 {
                     Role.Names.Admin, Role.Names.Stockman
                 }
+            },
+            new AreaInfo
+            {
+                DisplayName = "Driver - Stock mail",
+                Controller = "Driver",
+                Action = "StockMail",
+                ForRoles = new List<string>
+                {
+                    Role.Names.Admin, Role.Names.Driver
+                }
+            },
+            new AreaInfo
+            {
+                DisplayName = "Driver - Car mail",
+                Controller = "Driver",
+                Action = "CarMail",
+                ForRoles = new List<string>
+                {
+                    Role.Names.Admin, Role.Names.Driver
+                }
             }
         };
 

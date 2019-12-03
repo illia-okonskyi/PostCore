@@ -1,0 +1,129 @@
+﻿@model PostCore.MainApp.ViewModels.Driver.MailViewModel
+
+@{
+    ViewBag.Title = "Driver - Car mail";
+    Layout = "_MainLayout";
+
+    var optionsFormId = "optionsForm";
+    var optionsInputId = "options";
+    var submitButtonId = "options";
+    var filterKeySourceBranchId = "sourceBranchId";
+    var filterKeyDestinationBranchId = "destinationBranchId";
+    var filterKeyToInputId = new Dictionary<string, string>
+{
+{ filterKeySourceBranchId, "options_filters_sourceBranchId" },
+{ filterKeyDestinationBranchId, "options_filters_destinationBranchId" },
+};
+}
+
+<script>
+    $(document).ready(function () {
+        var loc = new PostCoreJs.ListOptionsContext("@Model.CurrentListOptions");
+        loc.formId = "@optionsFormId";
+        loc.optionsInputId = "@optionsInputId";
+        loc.addFilterKeyInputPair("@filterKeySourceBranchId", "@filterKeyToInputId[filterKeySourceBranchId]");
+        loc.addFilterKeyInputPair("@filterKeyDestinationBranchId", "@filterKeyToInputId[filterKeyDestinationBranchId]");
+        loc.resetPageOnSubmit = true;
+
+        loc.fillForm();
+        loc.setupSubmitButton("@submitButtonId");
+    });
+</script>
+
+<div class="card m-2">
+    <h5 class="card-header">Filters:</h5>
+    <div class="card-body">
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeySourceBranchId]">Source branch:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="@filterKeyToInputId[filterKeySourceBranchId]">
+                    <option value="" selected>- All -</option>
+                    @foreach (var b in Model.AllBranches)
+                    {
+                        var isSelected = Model.CurrentListOptions.Filters[filterKeySourceBranchId] == b.Id.ToString();
+                        <option value="@b.Id" selected="@isSelected">@b.Name</option>
+                    }
+                </select>
+                <div><span validation-key="@filterKeySourceBranchId" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 col-form-label" for="@filterKeyToInputId[filterKeyDestinationBranchId]">Destination branch:</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="@filterKeyToInputId[filterKeyDestinationBranchId]">
+                    <option value="" selected>- All -</option>
+                    @foreach (var b in Model.AllBranches)
+                    {
+                        var isSelected = Model.CurrentListOptions.Filters[filterKeyDestinationBranchId] == b.Id.ToString();
+                        <option value="@b.Id" selected="@isSelected">@b.Name</option>
+                    }
+                </select>
+                <div><span validation-key="@filterKeyDestinationBranchId" class="text-danger"></span></div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10">
+                <button class="btn btn-primary" id="@submitButtonId">Filter</button>
+            </div>
+        </div>
+        <form asp-action="CarMail" id="@optionsFormId" method="get">
+            <input type="hidden" id="@optionsInputId" name="@optionsInputId" />
+        </form>
+    </div>
+</div>
+
+<div class="card m-2">
+    <h5 class="card-header">Mail:</h5>
+    <div class="card-body">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        <sorta action="CarMail"
+                               display-name="ID"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="Id" />
+                    </th>
+                    <th>
+                        <sorta action="CarMail"
+                               display-name="Source branch"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="SourceBranchId" />
+
+                    </th>
+                    <th>
+                        <sorta action="CarMail"
+                               display-name="Destination branch"
+                               list-options="@Model.CurrentListOptions"
+                               sort-key="DestinationBranchId" />
+
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var post in Model.Mail)
+                {
+                    <tr>
+                        <td>@post.Id</td>
+                        <td>@post.SourceBranch.Name</td>
+                        <td>@post.DestinationBranch.Name</td>
+                        <td>
+                            <form asp-action="MoveToBranchStock" method="post" class="form-inline">
+                                <input type="hidden" name="postId" value="@post.Id" />
+                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                                <button type="submit" class="btn btn-primary">Move to branch</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="text-center"
+             list-options="@Model.CurrentListOptions"
+             pagination-info="@Model.Mail.PaginationInfo"
+             page-class="btn btn-outline-primary"
+             page-class-current="active"></div>
+
+    </div>
+</div>

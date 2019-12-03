@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PostCore.Core.Activities;
 using PostCore.Core.Branches;
+using PostCore.Core.Cars;
 using PostCore.Core.DbContext;
 using PostCore.Core.Mail;
 using PostCore.Core.Users;
@@ -41,6 +42,8 @@ namespace PostCore.Core.Services.Dao
         Task CreateAsync(Post post, User user);
         Task DeliverAsync(long postId, User user);
         Task StockAsync(long postId, string address, User user);
+        Task MoveToCarAsync(long postId, Car car, bool courierDelivery, User user);
+        Task MoveToBranchStockAsync(long postId, Branch branch, User user);
     }
 
     public class MailDao : IMailDao
@@ -290,6 +293,88 @@ namespace PostCore.Core.Services.Dao
                     User = $"{user.FirstName} {user.LastName}",
                     PostId = post.Id,
                     BranchId = post.BranchId
+                });
+                await _dbContext.SaveChangesAsync();
+
+                try
+                {
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                }
+            }
+        }
+
+        public async Task MoveToCarAsync(long postId, Car car, bool courierDelivery, User user)
+        {
+            using (var transaction = await _dbContext.Database.BeginTransactionAsync())
+            {
+                var post = await _dbContext.Post.Where(p => p.Id == postId).FirstOrDefaultAsync();
+                if (post == null)
+                {
+                    throw new ArgumentException("Post with such id not found", nameof(postId));
+                }
+
+                var branchId = post.BranchId;
+                var carId = car.Id;
+
+                post.State = courierDelivery
+                    ? PostState.InDeviveryToPerson
+                    : PostState.InDeliveryToBranchStock;
+                post.BranchId = null;
+                post.BranchStockAddress = null;
+                post.CarId = carId;
+                _dbContext.Activity.Add(new Activity
+                {
+                    Type = ActivityType.PostMovedToCar,
+                    Message = $"Post #{post.Id} moved to car",
+                    DateTime = DateTime.Now,
+                    User = $"{user.FirstName} {user.LastName}",
+                    PostId = post.Id,
+                    BranchId = branchId,
+                    CarId = carId
+                });
+                await _dbContext.SaveChangesAsync();
+
+                try
+                {
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                }
+            }
+        }
+
+        public async Task MoveToBranchStockAsync(long postId, Branch branch, User user)
+        {
+            using (var transaction = await _dbContext.Database.BeginTransactionAsync())
+            {
+                var post = await _dbContext.Post.Where(p => p.Id == postId).FirstOrDefaultAsync();
+                if (post == null)
+                {
+                    throw new ArgumentException("Post with such id not found", nameof(postId));
+                }
+
+                var branchId = branch.Id;
+                var carId = post.CarId;
+
+                post.State = PostState.InBranchStock;
+                post.BranchId = branchId;
+                post.BranchStockAddress = null;
+                post.CarId = null;
+                _dbContext.Activity.Add(new Activity
+                {
+                    Type = ActivityType.PostMovedToBranchStock,
+                    Message = $"Post #{post.Id} moved to branch stock",
+                    DateTime = DateTime.Now,
+                    User = $"{user.FirstName} {user.LastName}",
+                    PostId = post.Id,
+                    BranchId = branchId,
+                    CarId = carId
                 });
                 await _dbContext.SaveChangesAsync();
 
