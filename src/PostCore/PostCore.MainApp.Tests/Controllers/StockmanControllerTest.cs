@@ -197,6 +197,8 @@ namespace PostCore.MainApp.Tests.Controllers
                     PersonFrom = "personFrom" + random.Next(),
                     PersonTo = "personTo" + random.Next(),
                     AddressTo = "addressTo" + random.Next(),
+                    SourceBranchId = random.Next() % context.Branches.Count(),
+                    DestinationBranchId = random.Next() % context.Branches.Count(),
                     BranchId = context.Branches[myBranchIndex].Id,
                     State = PostState.InBranchStock
                 });
@@ -227,7 +229,7 @@ namespace PostCore.MainApp.Tests.Controllers
                 filterAddressTo: options.Filters["addressTo"],
                 sortKey: options.SortKey,
                 sortOrder: options.SortOrder))
-                .ToPaginatedList(options.Page, OperatorController.PageSize);
+                .ToPaginatedList(options.Page, StockmanController.PageSize);
             Assert.Same(context.Branches, vm.AllBranches);
             Assert.Equal(expectedMail, vm.Mail);
             Assert.Same(options, vm.CurrentListOptions);
