@@ -171,6 +171,8 @@ namespace PostCore.MainApp.Tests.Controllers
                 {
                     return context.LoggedInUser?.Role;
                 });
+            currentUserServiceMock.Setup(m => m.GetBranchAsync())
+                .ReturnsAsync(() => { return context.CurrentBranch; });
             currentUserServiceMock.Setup(m => m.SetBranchAsync(It.IsAny<long>()))
                 .Callback((long branchId) =>
                 {
@@ -178,6 +180,8 @@ namespace PostCore.MainApp.Tests.Controllers
                     context.CurrentBranch = branch;
                 })
                 .ReturnsAsync(true);
+            currentUserServiceMock.Setup(m => m.GetCarAsync())
+                .ReturnsAsync(() => { return context.CurrentCar; });
             currentUserServiceMock.Setup(m => m.SetCarAsync(It.IsAny<long>()))
                 .Callback((long carId) =>
                 {
@@ -343,6 +347,10 @@ namespace PostCore.MainApp.Tests.Controllers
             var user = context.Users[0];
             context.LoggedInUser = user;
 
+            var branch = context.Branches[0];
+            var car = context.Cars[0];
+            context.CurrentBranch = branch;
+            context.CurrentCar = car;
             var expectedVm = new ManageViewModel
             {
                 UserId = user.Id,
@@ -352,8 +360,10 @@ namespace PostCore.MainApp.Tests.Controllers
                 LastName = user.LastName,
                 HasBranch = user.Role.HasBranch,
                 AllBranches = user.Role.HasBranch ? context.Branches : null,
+                BranchId = user.Role.HasBranch ? branch.Id : default(long),
                 HasCar = user.Role.HasCar,
                 AllCars = user.Role.HasCar ? context.Cars : null,
+                CarId = user.Role.HasCar ? car.Id : default(long),
                 ReturnUrl = returnUrl
             };
 
@@ -378,8 +388,10 @@ namespace PostCore.MainApp.Tests.Controllers
             Assert.Equal(expectedVm.FirstName, vm.FirstName);
             Assert.Equal(expectedVm.LastName, vm.LastName);
             Assert.Equal(expectedVm.HasBranch, vm.HasBranch);
+            Assert.Equal(expectedVm.BranchId, vm.BranchId);
             Assert.Equal(expectedVm.AllBranches, vm.AllBranches);
             Assert.Equal(expectedVm.AllCars, vm.AllCars);
+            Assert.Equal(expectedVm.CarId, vm.CarId);
             Assert.Equal(expectedVm.ReturnUrl, vm.ReturnUrl);
         }
 

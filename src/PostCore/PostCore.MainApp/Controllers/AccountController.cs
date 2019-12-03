@@ -87,10 +87,14 @@ namespace PostCore.MainApp.Controllers
             if (vm.HasBranch)
             {
                 vm.AllBranches = await _branchesDao.GetAllAsync();
+                var branch = await _currentUserService.GetBranchAsync();
+                vm.BranchId = branch?.Id ?? default(long);
             }
             if (vm.HasCar)
             {
                 vm.AllCars = await _carsDao.GetAllAsync();
+                var car = await _currentUserService.GetCarAsync();
+                vm.CarId = car?.Id ?? default(long);
             }
 
             return View(vm);
